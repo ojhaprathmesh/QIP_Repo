@@ -1,0 +1,25 @@
+# Benchmark Images Specification
+# Target resolutions and synthetic test patterns
+
+resolutions:
+  default: [8, 8]
+  supported:
+    - [4, 4]
+    - [8, 8]
+    - [16, 16]
+    - [32, 32]
+
+synthetic_patterns:
+  - name: "checkerboard"
+    description: "Alternating high-contrast black and white squares"
+  - name: "gradient"
+    description: "Horizontal and diagonal continuous intensity ramp"
+  - name: "shepp_logan_phantom"
+    description: "Simulated medical tomography phantom"
+  - name: "point_impulse"
+    description: "Single bright pixel for point spread error investigation"
+
+dataset_paths:
+  raw_dir: "data/raw_images"
+  noisy_dir: "data/noisy_classical"
+  results_dir: "data/experiment_results"

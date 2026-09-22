@@ -1,0 +1,30 @@
+# Noise Profiles for Quantum Image Robustness Experiments
+# Default physical parameters and sweep definitions
+
+depolarizing_sweep:
+  p_min: 0.0001
+  p_max: 0.1
+  num_points: 20
+  scale: "log"
+  two_qubit_multiplier: 10.0
+
+relaxation_profiles:
+  typical_superconducting:
+    t1_us: 100.0
+    t2_us: 80.0
+    gate_time_single_ns: 35.0
+    gate_time_two_ns: 250.0
+  degraded_coherence:
+    t1_us: 30.0
+    t2_us: 15.0
+    gate_time_single_ns: 35.0
+    gate_time_two_ns: 350.0
+
+readout_error:
+  default:
+    p_0_given_1: 0.03
+    p_1_given_0: 0.01
+
+shot_sampling:
+  default_shots: 100000
+  sweep_shots: [1000, 5000, 10000, 50000, 100000, 500000]

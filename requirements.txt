@@ -1,0 +1,27 @@
+# Core Quantum Computing
+qiskit>=1.2.0
+qiskit-aer>=0.15.0
+pennylane>=0.38.0
+cirq>=1.4.0
+
+# Scientific & Image Processing
+numpy>=1.24.0,<2.0.0
+scipy>=1.11.0
+opencv-python-headless>=4.8.0
+scikit-image>=0.22.0
+bm3d>=4.0.0
+
+# Data Analysis & Visualization
+pandas>=2.1.0
+matplotlib>=3.8.0
+seaborn>=0.13.0
+
+# Configuration & Utilities
+pyyaml>=6.0.1
+tqdm>=4.66.0
+
+# Development, Testing & Notebooks
+pytest>=7.4.0
+pytest-cov>=4.1.0
+jupyterlab>=4.0.0
+ipywidgets>=8.1.0

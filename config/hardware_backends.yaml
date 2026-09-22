@@ -1,0 +1,20 @@
+# Hardware Backends and Fake Provider Profiles
+# Mirrors physical IBM Quantum QPUs via Qiskit Aer
+
+backends:
+  fake_brisbane:
+    description: "IBM Eagle/Heron architecture mock with heavy-hex topology"
+    qubits: 127
+    average_t1_us: 240.0
+    average_t2_us: 150.0
+    average_cnot_error: 0.008
+    average_readout_error: 0.015
+
+  ideal_aer:
+    description: "Noiseless Qiskit Aer statevector simulator"
+    method: "statevector"
+
+  density_matrix_sim:
+    description: "Full CPTP Kraus channel density matrix simulation"
+    method: "density_matrix"
+    max_qubits: 14

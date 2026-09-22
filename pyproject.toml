@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qip"
+version = "0.1.0"
+description = "Quantum Image Robustness & Denoising Framework under NISQ Realities"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Prathmesh Ojha" }
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Physics",
+    "Topic :: Scientific/Engineering :: Image Processing",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "qiskit>=1.2.0",
+    "qiskit-aer>=0.15.0",
+    "pennylane>=0.38.0",
+    "cirq>=1.4.0",
+    "numpy>=1.24.0,<2.0.0",
+    "scipy>=1.11.0",
+    "opencv-python-headless>=4.8.0",
+    "scikit-image>=0.22.0",
+    "bm3d>=4.0.0",
+    "pandas>=2.1.0",
+    "matplotlib>=3.8.0",
+    "seaborn>=0.13.0",
+    "pyyaml>=6.0.1",
+    "tqdm>=4.66.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "jupyterlab>=4.0.0",
+    "ipywidgets>=8.1.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pyright]
+include = ["src", "tests"]
+extraPaths = ["src", "."]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["."]
