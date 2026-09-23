@@ -218,6 +218,7 @@ flowchart TB
 ├── .gitignore                        # Git ignore rules for Python, notebooks, and data
 ├── environment.yml                   # Conda environment specification
 ├── LICENSE                           # MIT License
+├── main.py                           # Unified master CLI and end-to-end pipeline runner
 ├── PLAN.md                           # Master Research & Systems Engineering Plan
 ├── pyproject.toml                    # Standard Python package metadata and tool configs
 ├── README.md                         # Project documentation and current status
@@ -274,6 +275,10 @@ flowchart TB
    uv run pytest
    ```
 
+4. **Run the end-to-end pipeline demo:**
+   ```bash
+   python main.py --demo
+   ```
 ---
 
 ## 8. Implementation Roadmap

@@ -1,6 +1,6 @@
 """Image Quality Metrics: PSNR, SSIM, and MSE."""
 
-from typing import Dict
+from typing import Dict, Optional
 import math
 import numpy as np
 
@@ -30,7 +30,10 @@ def compute_psnr(
 
 
 def compute_ssim(
-    clean: np.ndarray, noisy: np.ndarray, data_range: float = 1.0
+    clean: np.ndarray,
+    noisy: np.ndarray,
+    data_range: float = 1.0,
+    win_size: Optional[int] = None,
 ) -> float:
     """Compute Structural Similarity Index Measure (SSIM).
 
@@ -38,14 +41,28 @@ def compute_ssim(
         clean: Ground truth reference image.
         noisy: Evaluated image.
         data_range: Dynamic range of pixel values.
+        win_size: Filter window size (auto-adjusted for small images).
 
     Returns:
         float: SSIM score between -1.0 and 1.0.
     """
+    min_side = min(clean.shape[0], clean.shape[1])
+    if min_side < 3:
+        mse = compute_mse(clean, noisy)
+        return 1.0 if mse == 0.0 else float(max(-1.0, 1.0 - 2.0 * mse))
+
+    if win_size is None:
+        if min_side >= 7:
+            win_size = 7
+        else:
+            win_size = min_side if (min_side % 2 != 0) else (min_side - 1)
+
     try:
         from skimage.metrics import structural_similarity
 
-        return float(structural_similarity(clean, noisy, data_range=data_range))
+        return float(
+            structural_similarity(clean, noisy, data_range=data_range, win_size=win_size)
+        )
     except ImportError:
         raise ImportError(
             "scikit-image is required for SSIM calculation. Install with `pip install scikit-image`."
