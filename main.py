@@ -128,40 +128,63 @@ def run_demo(resolution: int = 4, pattern: str = "checkerboard", noise_rate: flo
     recon_neqr_noisy = neqr_enc.decode(counts_neqr, normalize=True)
     metrics_neqr_noisy = compute_all_image_metrics(clean_img, recon_neqr_noisy)
 
-    # ---------------- Classical Denoising Baselines ----------------
-    print(f"\n[5/5] Benchmarking Classical Baseline Filters on Noisy Quantum Output...")
+    # ---------------- Phase 2: Quantum & Classical Denoising Baselines ----------------
+    print(f"\n[5/5] Benchmarking Quantum Denoising (QHWT) vs Classical Baselines...")
+    from src.quantum_denoising.qhwt import QuantumHaarFilter
+    from src.quantum_denoising.spatial_adder import QuantumSpatialFilter
+    from src.classical_denoising.bm3d_wrapper import apply_bm3d_filter
+
+    # Quantum Filtering
+    qhwt_filter = QuantumHaarFilter(n_qubits_coord=n_coord, threshold=0.25)
+    denoised_qhwt = qhwt_filter.denoise_image(recon_frqi_noisy)
+    metrics_qhwt = compute_all_image_metrics(clean_img, denoised_qhwt)
+
+    spatial_filter = QuantumSpatialFilter(n_qubits_coord=n_coord, color_bits=color_bits)
+    denoised_spatial = spatial_filter.denoise_image(recon_neqr_noisy)
+    metrics_spatial = compute_all_image_metrics(clean_img, denoised_spatial)
+
+    # Classical Filtering
     filtered_mean = apply_mean_filter(recon_frqi_noisy, kernel_size=3)
     filtered_med = apply_median_filter(recon_frqi_noisy, kernel_size=3)
     filtered_gauss = apply_gaussian_filter(recon_frqi_noisy, kernel_size=3, sigma=0.8)
+    filtered_bm3d = apply_bm3d_filter(recon_frqi_noisy, sigma_psd=0.08)
 
     metrics_mean = compute_all_image_metrics(clean_img, filtered_mean)
     metrics_med = compute_all_image_metrics(clean_img, filtered_med)
     metrics_gauss = compute_all_image_metrics(clean_img, filtered_gauss)
+    metrics_bm3d = compute_all_image_metrics(clean_img, filtered_bm3d)
 
     # ---------------- Summary Results Table ----------------
     print("\n" + "=" * 80)
-    print("                        BENCHMARK RESULTS SUMMARY")
+    print("                 PHASE 2 - COMPREHENSIVE BENCHMARK RESULTS")
     print("=" * 80)
-    header = f"{'Pipeline / Representation':<32} | {'PSNR (dB)':<10} | {'SSIM':<8} | {'MSE':<10}"
+    header = f"{'Pipeline / Representation':<34} | {'PSNR (dB)':<10} | {'SSIM':<8} | {'MSE':<10}"
     print(header)
     print("-" * 80)
 
     rows = [
         ("FRQI Ideal (Noiseless)", metrics_frqi_clean["psnr"], metrics_frqi_clean["ssim"], metrics_frqi_clean["mse"]),
         ("NEQR Ideal (Noiseless)", metrics_neqr_clean["psnr"], metrics_neqr_clean["ssim"], metrics_neqr_clean["mse"]),
-        (f"FRQI Noisy (p={noise_rate}, {shots}sh)", metrics_frqi_noisy["psnr"], metrics_frqi_noisy["ssim"], metrics_frqi_noisy["mse"]),
-        (f"NEQR Noisy (p={noise_rate}, {shots}sh)", metrics_neqr_noisy["psnr"], metrics_neqr_noisy["ssim"], metrics_neqr_noisy["mse"]),
-        ("Classical Mean Filter on FRQI", metrics_mean["psnr"], metrics_mean["ssim"], metrics_mean["mse"]),
-        ("Classical Median Filter on FRQI", metrics_med["psnr"], metrics_med["ssim"], metrics_med["mse"]),
-        ("Classical Gaussian Blur on FRQI", metrics_gauss["psnr"], metrics_gauss["ssim"], metrics_gauss["mse"]),
+        (f"FRQI Noisy Input (p={noise_rate})", metrics_frqi_noisy["psnr"], metrics_frqi_noisy["ssim"], metrics_frqi_noisy["mse"]),
+        (f"NEQR Noisy Input (p={noise_rate})", metrics_neqr_noisy["psnr"], metrics_neqr_noisy["ssim"], metrics_neqr_noisy["mse"]),
+        ("-" * 34, 0.0, 0.0, 0.0),
+        ("Quantum Denoised: QHWT", metrics_qhwt["psnr"], metrics_qhwt["ssim"], metrics_qhwt["mse"]),
+        ("Quantum Denoised: Spatial Adder", metrics_spatial["psnr"], metrics_spatial["ssim"], metrics_spatial["mse"]),
+        ("Classical Baseline: Median", metrics_med["psnr"], metrics_med["ssim"], metrics_med["mse"]),
+        ("Classical Baseline: BM3D Filter", metrics_bm3d["psnr"], metrics_bm3d["ssim"], metrics_bm3d["mse"]),
+        ("Classical Baseline: Mean Box", metrics_mean["psnr"], metrics_mean["ssim"], metrics_mean["mse"]),
+        ("Classical Baseline: Gaussian", metrics_gauss["psnr"], metrics_gauss["ssim"], metrics_gauss["mse"]),
     ]
 
     for name, psnr_val, ssim_val, mse_val in rows:
+        if name.startswith("-"):
+            print("-" * 80)
+            continue
         psnr_str = f"{psnr_val:.2f}" if psnr_val < 200 else "> 100"
-        print(f"{name:<32} | {psnr_str:<10} | {ssim_val:<8.4f} | {mse_val:<10.6f}")
+        print(f"{name:<34} | {psnr_str:<10} | {ssim_val:<8.4f} | {mse_val:<10.6f}")
 
     print("=" * 80)
-    print("Pipeline demo completed successfully!\n")
+    print("Phase 2 quantum vs. classical benchmark completed successfully!\n")
 
 
 def main():

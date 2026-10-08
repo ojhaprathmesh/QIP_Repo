@@ -222,7 +222,99 @@ flowchart TB
         Classical_Path --> METRICS
         METRICS --> BREAKDOWN
     end
+
+    subgraph Interactive_UI["7. Real-Time Next.js Visualizer & Live Process Studio"]
+        direction TB
+        STREAM_BRIDGE["FastAPI / WebSocket Streaming Bridge\n(Event Bus: IPC / SSE)"]
+        NEXTJS_APP["Next.js Real-Time Studio\n- Modular Process Stages (1 to 6)\n- 3D Bloch & Statevector Inspector\n- Live Noise Chamber Sliders\n- Dual Image Comparison Canvas\n- Dynamic Convergence & Phase Transition Radar"]
+        
+        METRICS -.->|Live Telemetry| STREAM_BRIDGE
+        RECON -.->|Streaming Frames| STREAM_BRIDGE
+        CHANNEL -.->|Noise Parameters| STREAM_BRIDGE
+        STREAM_BRIDGE <==>|Bidirectional WS| NEXTJS_APP
+    end
 ```
+
+------------------------------------------------------------------------
+
+## 6.1 Interactive Real-Time Process Visualizer (Next.js Application Architecture)
+
+To bridge the gap between theoretical quantum information science and tangible empirical intuition, the framework includes a **modular, real-time interactive Next.js application** (`ui/`). This interface visualizes every stage of the 6-layer architecture as it executes on simulated quantum backends.
+
+```mermaid
+flowchart TD
+    subgraph UI_Architecture["Next.js Interactive Studio Component Hierarchy"]
+        direction TB
+        PAGE["app/page.tsx (Master Pipeline Dashboard)"]
+        
+        subgraph Stage_Components["Modular Process Stage Views (Aligned with Section 6)"]
+            C1["1. StageIngestion\n- Scaled Grid Canvas (4x4 to 32x32)\n- Intensity Histogram\n- Pattern Generator & Upload"]
+            C2["2. StageEncoding\n- Qubit Register Allocator\n- Interactive Circuit DAG Transpiler\n- Statevector Superposition Inspector"]
+            C3["3. StageNoiseChamber\n- Depolarizing & Thermal Sliders\n- 3D Bloch Sphere Decoherence\n- Readout Confusion Matrix"]
+            C4["4. StageDenoiseArena\n- Quantum vs Classical Split View\n- QHWT Sub-band Thresholding (|LL>, |LH>, |HL>, |HH>)\n- Spatial Adder Step-Through"]
+            C5["5. StageTomography\n- Monte Carlo Shot Accumulator (10^3 to 10^6)\n- Real-Time Bitstring Histogram\n- Progressive Raster Reconstruction"]
+            C6["6. StageAnalytics\n- PSNR / SSIM / MSE Delta Gauges\n- Real-Time p_crit Phase Transition Curve\n- Quantum Advantage Horizon Verdict"]
+        end
+
+        subgraph Core_Services["Client Core & Streaming Layer"]
+            WS["lib/useQuantumStream.ts (WebSocket Client)"]
+            STORE["lib/quantumStore.ts (Zustand Global State)"]
+            THEME["Theme & Motion (Tailwind CSS + Framer Motion)"]
+        end
+
+        PAGE --> C1
+        PAGE --> C2
+        PAGE --> C3
+        PAGE --> C4
+        PAGE --> C5
+        PAGE --> C6
+        
+        WS --> STORE
+        STORE --> Stage_Components
+    end
+```
+
+### 6.1.1 Creative & Real-Time Visualization of All 6 Processes
+
+| System Process | UI Component & Creative Visualization | Real-Time Interactive Capabilities |
+| :--- | :--- | :--- |
+| **Process 1: Image Ingestion & Spatial Preprocessing** | `StageIngestion.tsx`<br>- Dynamic coordinate grid overlay with pixel intensity tooltips.<br>- Real-time histogram of spatial frequencies.<br>- Preset selector (Checkerboard, Gradient, Shepp-Logan) + drag-and-drop custom image downscaler. | - Live image resize ($4 \times 4$, $8 \times 8$, $16 \times 16$, $32 \times 32$) with immediate qubit requirement recalculation ($2n+1$ vs $2n+q$).<br>- Interactive classical noise injector (Gaussian / Impulse) before state preparation. |
+| **Process 2: Quantum State Synthesis** | `StageEncoding.tsx`<br>- **Dual Representation Visualizer**: Switch between FRQI (continuous rotation angles) and NEQR (basis bitstring registers).<br>- Animated circuit DAG viewer powered by React Flow with gate-level zoom.<br>- Superposition probability amplitude bar chart color-coded by quantum phase $\phi$. | - Step-through gate synthesizer (watch Hadamards fire, followed by controlled $R_y$ or MCX cascades).<br>- Live telemetry badge: Qubit count, CNOT count, circuit depth. |
+| **Process 3: NISQ Noise Chamber** | `StageNoiseChamber.tsx`<br>- **3D Bloch Sphere Decoherence**: Three.js / React Three Fiber rendering of single-qubit density matrix shrinking towards center (depolarizing) or dropping to $|0\rangle$ (amplitude damping $T_1$).<br>- Purity indicator: $\gamma = \text{Tr}(\rho^2)$ live gauge.<br>- Readout confusion heatmaps. | - Live sliders for $p$, $T_1$, $T_2$, and readout error probabilities with instantaneous statevector perturbation.<br>- Hardware Backend selector (`FakeBrisbane`, `FakeKyoto`, `Ideal Aer`). |
+| **Process 4: Denoising Engine Arena** | `StageDenoiseArena.tsx`<br>- Side-by-side split screen comparing **Quantum Filter** (QHWT or Spatial Adder) against **Classical Suite** (Mean, Median, Gaussian, Bilateral, BM3D).<br>- **QHWT Frequency Matrix**: 4-quadrant display showing $|LL\rangle$ approximation alongside attenuated $|LH\rangle, |HL\rangle, |HH\rangle$ detail coefficients. | - Threshold cutoff slider with real-time inverse wavelet reconstruction.<br>- Interactive slider comparing quantum vs classical denoised frames. |
+| **Process 5: Measurement Tomography & Sampling** | `StageTomography.tsx`<br>- **Monte Carlo Shot Accumulator**: Streaming bitstring frequency histogram updating at 60 FPS.<br>- Progressive Raster Reconstruction: Watch pixels coalesce from pure shot noise into structured patterns as $N_{\text{shots}}$ scales from $10^3$ to $10^6$. | - Pause/resume shot sampling engine.<br>- Shot budget scrubber to observe $\epsilon_{\text{shot}} \propto 1/\sqrt{N_{\text{shots}}}$ convergence live. |
+| **Process 6: Comparative Evaluation & Phase Transition** | `StageAnalytics.tsx`<br>- Live KPI scorecard: PSNR (dB), SSIM, MSE, and Fidelity $\mathcal{F}$ with delta chips ($\Delta\text{PSNR}$).<br>- **Dynamic Phase Transition Plotter**: Live curve mapping PSNR vs. error rate $p$, rendering the critical $p_{\text{crit}}$ threshold.<br>- **Quantum Advantage Verdict**: Animated badge indicating whether quantum processing is advantageous, equivalent, or collapsed. | - Toggle between log and linear scales for noise rate $p$.<br>- Export publication-ready SVG figures and JSON benchmark runs with one click. |
+
+### 6.1.2 Real-Time Streaming Bridge Architecture (`FastAPI <-> Next.js`)
+
+To ensure smooth 60 FPS UI rendering without blocking the Python scientific computation kernel, communication is orchestrated via an asynchronous WebSocket event streaming bridge:
+
+```
+[Next.js Client] ─── (WebSocket: ws://localhost:8000/ws/simulate) ───► [FastAPI Simulation Server]
+                                                                                │
+                                                                   Dispatches to Python Core:
+                                                                   (src/encoding, src/noise, etc.)
+                                                                                │
+◄─── JSON Event Stream: ────────────────────────────────────────────────────────┘
+     { "type": "STAGE_STARTED",       "stage": 1, "timestamp": 1728292800 }
+     { "type": "CIRCUIT_COMPILED",    "depth": 23, "cnots": 12, "qubits": 5 }
+     { "type": "STATEVECTOR_UPDATED", "amplitudes": [...], "purity": 0.982 }
+     { "type": "SHOTS_ACCUMULATED",   "shots": 25000, "partial_counts": {...} }
+     { "type": "FRAME_RECONSTRUCTED", "pixels": [...], "psnr": 24.3, "ssim": 0.81 }
+     { "type": "PHASE_CRIT_FOUND",    "p_crit": 0.0084, "verdict": "CLASSICAL_DOMINATES" }
+```
+
+### 6.1.3 Design System & Aesthetics Guidelines
+
+- **Theme**: Deep space obsidian (`#090a0f`) with glowing quantum luminescence:
+  - Electric Cyan (`#00f5ff`): FRQI continuous state amplitudes & quantum pathways.
+  - Luminous Violet (`#a855f7`): NEQR basis states & coordinate registers.
+  - Emerald Green (`#10b981`): Classical baseline comparisons & high-fidelity metrics.
+  - Amber / Neon Coral (`#f43f5e`): Hardware noise injection & breakdown warnings.
+- **Micro-Animations (Framer Motion)**:
+  - Pulse and glow transitions as execution advances from Stage 1 through Stage 6.
+  - Smooth spring physics for slider adjustments and split-screen comparison curtains.
+- **Component Primitives**: Built using modern 21st.dev and Tailwind CSS patterns—zero generic "AI Slop" layouts; strict scientific typography (Inter for UI, JetBrains Mono for bitstrings, equations rendered with KaTeX/LaTeX).
 
 ------------------------------------------------------------------------
 
@@ -454,11 +546,72 @@ gantt
     Paper / Report Writing & Figure Production   :p4_2, after p4_1, 8d
 ```
 
-### Phase Details:
-- **Phase 1: Representation & Noise Modeling (Weeks 1–2):** Complete Qiskit/PennyLane implementations of FRQI and NEQR; automated decomposition of multi-controlled rotation and Toffoli gates; calibration of depolarizing, amplitude damping, dephasing, and readout noise models.
-- **Phase 2: Denoising Engine Development (Weeks 3–4):** Implement classical baselines (Mean, Median, Gaussian, Bilateral, BM3D); build quantum denoising circuits (QHWT frequency-band thresholding and spatial moving average via reversible adders).
-- **Phase 3: Large-Scale Empirical Experimentation (Weeks 5–6):** Execute automated sweeps across image datasets (Shepp-Logan Phantom, Cameraman, Checkerboard); log thousands of simulation runs with varying noise rates $p \in [10^{-4}, 10^{-1}]$ and shot budgets ($10^3$ to $10^6$).
-- **Phase 4: Synthesis, Validation & Publication (Weeks 7–8):** Generate comparative analytical curves; identify empirical $p_{\text{crit}}$ phase transitions; document mathematical proofs; finalize comprehensive research manuscript.
+### 15.1 Phase Details & Engineering Milestones
+
+#### Phase 1 — Quantum State Representation & NISQ Noise Modeling (Completed ✅)
+- **Goal**: Implement gate-level circuit synthesis for FRQI and NEQR, open-system Kraus noise channels, and evaluation metrics, validating lossless reconstruction in the absence of noise.
+- **Deliverables**:
+  - `src/encoding/frqi.py`: Synthesizer for $2n+1$ qubits with controlled $R_y$ cascades; analytic statevector and shot-based trigonometric decoders.
+  - `src/encoding/neqr.py`: Synthesizer for $2n+q$ qubits with multi-controlled $X$ gates; basis state and majority-vote shot decoders.
+  - `src/noise/channels.py` & `src/noise/readout.py`: CPTP channels for depolarizing, amplitude damping ($T_1$), dephasing ($T_2$), and asymmetric readout confusion.
+  - `src/metrics/`: High-precision PSNR, adaptive-window SSIM, MSE, Quantum State Fidelity $\mathcal{F}$, DAG gate depth, and 2-qubit CNOT counters.
+  - `main.py`: Unified pipeline entrypoint with `--demo` mode.
+  - Unit test suite: 14 passing tests across encoding, noise channels, and metrics (`uv run pytest -v`).
+
+#### Phase 2 — Quantum-Assisted Denoising Engine & Classical Benchmark Suite
+- **Prerequisites**: Phase 1 (Completed ✅)
+- **Goal**: Build quantum image filtering circuits and integrate state-of-the-art classical image denoising baselines.
+- **Deliverables**:
+  - `src/classical_denoising/`: Mean, Median, Gaussian, Bilateral (OpenCV) and BM3D wrappers.
+  - `src/quantum_denoising/qhwt.py`: Quantum Haar Wavelet Transform circuit decomposing states into $|LL\rangle, |LH\rangle, |HL\rangle, |HH\rangle$ sub-bands with rotation-based detail thresholding.
+  - `src/quantum_denoising/spatial_adder.py`: NEQR 4-neighborhood moving average filter using reversible quantum full-adders.
+  - `src/quantum_denoising/vqdae.py`: Variational Quantum Denoising Autoencoder ansatz (PennyLane) for parametric noise suppression.
+  - Unit tests validating filter operator correctness and edge preservation.
+
+#### Phase 3A — Real-Time Simulation Streaming Bridge (FastAPI & WebSockets)
+- **Prerequisites**: Phase 1 & Phase 2
+- **Goal**: Build an asynchronous simulation server exposing full-duplex WebSockets for real-time telemetry streaming without blocking Python computation threads.
+- **Deliverables**:
+  - `api/server.py`: FastAPI server exposing `/ws/simulate` and `/api/health`.
+  - `api/event_bus.py`: Asynchronous event dispatcher broadcasting structured JSON telemetry packets (`CIRCUIT_COMPILED`, `STATEVECTOR_UPDATED`, `SHOTS_ACCUMULATED`, `FRAME_RECONSTRUCTED`, `PHASE_CRIT_FOUND`).
+  - `api/schemas.py`: Pydantic v2 schemas validating client parameters and simulation events.
+
+#### Phase 3B — Modular Real-Time Next.js 15 Visual Studio
+- **Prerequisites**: Phase 3A (Streaming Bridge & Event Bus)
+- **Goal**: Build a creative, modular Next.js 15 (React 19) web application visualizing all 6 architectural stages in real time at 60 FPS.
+- **Deliverables**:
+  - `ui/src/components/stages/`: Modular components `StageIngestion`, `StageEncoding`, `StageNoiseChamber`, `StageDenoiseArena`, `StageTomography`, and `StageAnalytics`.
+  - `ui/src/components/shared/BlochSphere3D.tsx`: Interactive Three.js / React Three Fiber 3D Bloch sphere rendering single-qubit density matrix shrinkage and $T_1$ decay.
+  - `ui/src/components/shared/CircuitViewer.tsx`: Interactive circuit DAG viewer.
+  - `ui/src/lib/useQuantumStream.ts` & `quantumStore.ts`: Resilient WebSocket client and Zustand state management with 60 FPS RAF throttling.
+  - Interactive side-by-side quantum vs. classical split-view canvas with real-time PSNR/SSIM telemetry.
+
+#### Phase 4 — Large-Scale Empirical Sweeps & Phase Transition Analysis ($p_{\text{crit}}$)
+- **Prerequisites**: Phase 2 & Phase 3
+- **Goal**: Execute comprehensive automated noise sweeps across benchmark datasets, determine the critical error boundary $p_{\text{crit}}$, and quantify the quantum breakdown.
+- **Deliverables**:
+  - `src/experiments/run_noise_sweep.py`: Automated 500+ simulation sweep across noise rates $p \in [10^{-4}, 10^{-1}]$ and shot budgets $N_{\text{shots}} \in [10^3, 10^6]$.
+  - `src/experiments/run_bitflip_study.py`: Color-qubit sensitivity study quantifying MSE degradation across NEQR bit positions $C_0$ to $C_7$.
+  - `src/experiments/run_denoising_benchmark.py`: Comparative benchmark evaluating Quantum (QHWT, Spatial Adder) vs Classical (Median, BM3D).
+  - Empirical derivation of $p_{\text{crit}}$ crossover boundary curves where classical filters surpass quantum filtering.
+
+#### Phase 5 — Research Environment Containerization & Reproducible Artifact Packaging
+- **Prerequisites**: Phase 3B & Phase 4
+- **Goal**: Package the entire research pipeline and interactive studio into reproducible, multi-stage Docker containers for transparent scientific reproduction.
+- **Deliverables**:
+  - `Dockerfile.backend`: Isolated Python research runtime for Qiskit Aer and FastAPI simulation kernel.
+  - `Dockerfile.frontend`: Multi-stage Next.js production build for the interactive studio.
+  - `docker-compose.yml`: Unified orchestration linking frontend, simulation backend, and experimental volume mounts.
+  - Automated smoke test script (`scripts/docker_smoke_test.sh`) verifying end-to-end execution and reproducing benchmark figures with one click.
+
+#### Phase 6 — Academic Publication, Research Manuscript & Defense Deliverables
+- **Prerequisites**: Phase 4 & Phase 5
+- **Goal**: Compile empirical findings into an IEEE-format research manuscript, publication-grade figures, and presentation artifacts for project defense.
+- **Deliverables**:
+  - High-resolution vector figures (SVG/PDF): PSNR vs $p$ degradation curves, 3D Bloch decoherence surfaces, and bit-significance bar charts.
+  - Comprehensive research manuscript detailing mathematical proofs, NISQ hardware limits, and empirical open-system findings (`paper/` / `docs/FINAL_REPORT.md`).
+  - Open-source research artifact release (GitHub/Zenodo) with complete experimental logs and checkpointed measurement data.
+  - Defense presentation slide deck and live interactive demonstration script for faculty evaluation.
 
 ------------------------------------------------------------------------
 
@@ -477,8 +630,24 @@ Classical Image Processing & Mathematics:
 ├── Scikit-Image (skimage.metrics: PSNR, SSIM calculation)
 └── BM3D Python (High-Fidelity Classical Baseline Denoising)
 
-Visualization & Benchmarking:
-├── Matplotlib & Seaborn (Publication-grade Scientific Plots)
+Interactive UI & Real-Time Visualization (Next.js Application):
+├── Next.js 15+ (React 19, App Router, Modular Server & Client Components)
+├── TypeScript 5.0+ (Strict Type-Safe Telemetry Event Schemas)
+├── Tailwind CSS v4 (Obsidian Dark Theme, Luminescent Accents, Fluid Grid Layouts)
+├── Framer Motion 11+ (Micro-animations, Spring Transitions, Multi-stage Step Flow)
+├── Three.js / React Three Fiber / @react-three/drei (Interactive 3D Bloch Sphere Decoherence)
+├── Recharts / Chart.js (Real-time Convergence Radar, Bitstring Histograms, Phase Curves)
+├── Lucide React (Clean Scientific & Hardware Iconography)
+└── Zustand (Decoupled, High-Cadence 60 FPS Event Bus State Management)
+
+Real-Time Simulation Bridge & API:
+├── FastAPI 0.115+ (Asynchronous ASGI Microservice for Simulation Control)
+├── Uvicorn (High-Throughput Asynchronous Server Gateway)
+├── WebSockets (Full-duplex Event Streaming for Live Circuit & Frame Telemetry)
+└── Pydantic v2 (Validation & Serialization of Statevector & Frame Payloads)
+
+Offline Scientific Visualization & Benchmarking:
+├── Matplotlib & Seaborn (Publication-grade Scientific Plots & LaTeX Heatmaps)
 ├── Pandas (Structured Experiment Logs & Run Traces)
 ├── JupyterLab (Interactive Exploratory Workbooks)
 └── PyTorch (Optional: Gradient Backprop for VQDAE Ansatz)
@@ -498,6 +667,11 @@ QuantumImageRobustness/
 │   ├── raw_images/                   # Benchmark test images (phantom, cameraman, lena)
 │   ├── noisy_classical/              # Pre-corrupted images for baseline testing
 │   └── experiment_results/           # Pickled measurement counts and output arrays
+├── api/                              # Real-Time Python Simulation Bridge (FastAPI)
+│   ├── __init__.py
+│   ├── server.py                     # WebSocket & REST endpoints (/ws/simulate, /api/health)
+│   ├── event_bus.py                  # Asynchronous event publisher broadcasting to Next.js
+│   └── schemas.py                    # Pydantic telemetry and simulation contract schemas
 ├── src/
 │   ├── encoding/                     # Quantum Image State Preparation
 │   │   ├── __init__.py
@@ -523,6 +697,36 @@ QuantumImageRobustness/
 │       ├── run_noise_sweep.py        # Master script for EXP-01 and EXP-02
 │       ├── run_bitflip_study.py      # Master script for EXP-03
 │       └── run_denoising_benchmark.py# Master script for EXP-04 and EXP-05
+├── ui/                               # Modular Next.js 15 Real-Time Studio
+│   ├── public/                       # Static assets & quantum benchmark sample icons
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── layout.tsx            # Global Obsidian/Quantum theme layout & font injection
+│   │   │   ├── page.tsx              # Master Real-Time Studio dashboard orchestrator
+│   │   │   └── globals.css           # Tailwind v4 styles, glowing borders, custom scrollbars
+│   │   ├── components/
+│   │   │   ├── stages/               # Modular process stage cards (Aligned with Section 6)
+│   │   │   │   ├── StageIngestion.tsx    # 1. Grid visualizer, histogram, presets
+│   │   │   │   ├── StageEncoding.tsx     # 2. FRQI/NEQR selector, circuit DAG, amplitudes
+│   │   │   │   ├── StageNoiseChamber.tsx # 3. Sliders, 3D Bloch sphere, readout matrix
+│   │   │   │   ├── StageDenoiseArena.tsx # 4. Quantum vs Classical comparison split-view
+│   │   │   │   ├── StageTomography.tsx   # 5. Shot accumulator & progressive raster
+│   │   │   │   └── StageAnalytics.tsx    # 6. KPI scorecards & p_crit phase curves
+│   │   │   ├── shared/               # Reusable creative UI primitives
+│   │   │   │   ├── BlochSphere3D.tsx     # Three.js single-qubit density matrix visualizer
+│   │   │   │   ├── CircuitViewer.tsx     # Interactive SVG/Canvas quantum gate diagram
+│   │   │   │   ├── ImageCanvas.tsx       # Sub-pixel canvas renderer with inspect zoom
+│   │   │   │   ├── MetricCard.tsx        # Glassmorphic KPI gauge with delta badges
+│   │   │   │   └── PipelineStepper.tsx   # Fluid stage navigation bar with active pulsing
+│   │   │   └── ui/                   # 21st.dev / Radix primitives (Button, Slider, Tooltip)
+│   │   └── lib/
+│   │       ├── useQuantumStream.ts   # Resilient WebSocket hook with reconnect logic
+│   │       ├── quantumStore.ts       # Zustand store synchronizing pipeline state
+│   │       └── types.ts              # TypeScript interfaces for WebSocket JSON events
+│   ├── package.json
+│   ├── tsconfig.json
+│   ├── tailwind.config.ts
+│   └── next.config.ts
 ├── notebooks/
 │   ├── 01_frqi_vs_neqr_demonstration.ipynb
 │   ├── 02_noise_channel_characterization.ipynb
@@ -534,6 +738,7 @@ QuantumImageRobustness/
 │   └── test_denoising.py             # Unit tests for filter operator correctness
 ├── environment.yml                   # Conda environment configuration
 ├── requirements.txt                  # PIP dependency list
+├── main.py                           # CLI entrypoint for local execution & demos
 └── README.md                         # Research documentation & reproduction instructions
 ```
 
@@ -556,6 +761,14 @@ QuantumImageRobustness/
 - **Decision:** Include both elementary spatial filters (Mean, Median, Gaussian) and state-of-the-art classical algorithms (Bilateral, BM3D).
 - **Rationale:** Proving quantum parity against Median filters establishes baseline viability; benchmarking against BM3D provides honest, rigorous academic assessment of the remaining gap.
 
+### ADR-004: Modular Next.js 15 App Router & Real-Time WebSocket Streaming Bridge
+- **Context:** Visualizing all 6 stages of quantum image processing requires high-frame-rate feedback (60 FPS), interactive 3D Bloch sphere decoherence, side-by-side quantum vs. classical split comparisons, and real-time phase transition curve plotting. Heavy scientific computation in Python (Qiskit/NumPy) must not freeze the presentation thread or introduce brittle IPC bottlenecks.
+- **Decision:** Build the user interface as an independent, modular **Next.js 15 (React 19)** application (`ui/`) connected to the Python simulation engine via an asynchronous **FastAPI WebSocket Streaming Bridge** (`api/server.py`). Implement each of the 6 pipeline stages as self-contained, composable React components wired through a reactive **Zustand** store.
+- **Rationale:**
+  1. **Maximum Creative & Visual Expressiveness:** Next.js coupled with Tailwind CSS, Framer Motion, and React Three Fiber delivers rich physics-based micro-animations and immersive 3D quantum state representations far beyond static notebook plots or generic dashboards.
+  2. **High Modularity & Maintainability:** Encapsulating each process stage (`StageIngestion` through `StageAnalytics`) in separate TypeScript components enables independent feature iteration, isolated component testing, and clean separation of concerns.
+  3. **Zero UI Blocking:** The asynchronous WebSocket streaming bridge pushes fine-grained telemetry packets (`CIRCUIT_COMPILED`, `SHOTS_ACCUMULATED`, `FRAME_RECONSTRUCTED`) without blocking Qiskit execution or freezing client UI interactions.
+
 ------------------------------------------------------------------------
 
 ## 19. Risk Register & Mitigation Strategy
@@ -566,17 +779,81 @@ QuantumImageRobustness/
 | **R-02** | Excessive CNOT depth causes simulated quantum circuit to output pure white noise ($0\text{ dB}$ PSNR). | Medium | High | **Circuit Optimization & Transpilation:** Apply advanced Qiskit transpiler passes (`optimization_level=3`, CommutativeCancellation, ConsolidateBlocks) to minimize 2-qubit gate depth. |
 | **R-03** | Shot noise dominates physical channel noise, obscuring theoretical conclusions. | Medium | Medium | **High Shot Budget & Tomography:** Set $N_{\text{shots}} \ge 100,000$ for primary curves; cross-validate with analytic state vector evaluation under noiseless channels. |
 | **R-04** | Quantum denoising circuit introduces more noise than it removes due to added gate depth. | High | High | **Transparent Negative Result Reporting:** Treat this as a primary scientific finding—identifying the exact breakeven circuit depth where quantum denoising becomes self-defeating on NISQ hardware. |
+| **R-05** | High-rate WebSocket telemetry flood causes React UI thread stutter. | Low | Medium | **Zustand Throttling & Raf Batching:** Throttle high-frequency shot accumulation events to 60 FPS using `requestAnimationFrame` before updating state buffers. |
 
 ------------------------------------------------------------------------
 
-## 20. Definition of Done (DoD)
+## 20. Definition of Done (DoD) & Phase Completion Checklist
 
-The research project and engineering codebase are deemed **Complete** when:
-1. **Lossless Encoding Verification:** In the absence of noise ($p=0$), both FRQI and NEQR state-preparation circuits reconstruct the clean benchmark image with $\text{PSNR} > 60\text{ dB}$ (within numerical precision).
-2. **Empirical Noise Sweeps Executed:** Minimum 500 distinct simulation runs executed covering all 5 noise channels across $p \in [10^{-4}, 10^{-1}]$.
-3. **Quantum Denoising Implemented:** At least two distinct quantum image denoising circuits (QHWT and Spatial Averaging) successfully executed and verified against classical filters.
-4. **Phase Transition ($p_{\text{crit}}$) Identified:** Precise numerical determination of the error threshold where quantum filtering advantages fall below classical filters.
-5. **Reproducible Codebase:** All code packaged with unit tests ($>85\%$ coverage), configuration YAMLs, and a one-click script reproducing all paper figures.
+The research project and engineering codebase are tracked against explicit, phase-by-phase completion criteria:
+
+### Phase 1 — Quantum State Representation & NISQ Noise Modeling
+
+- [x] Mathematical formulations for FRQI and NEQR state preparation derived and verified.
+- [x] FRQI circuit synthesizer implemented with controlled $R_y$ rotation cascades (`src/encoding/frqi.py`).
+- [x] NEQR circuit synthesizer implemented with multi-controlled NOT (`mcx`) bitstring gates (`src/encoding/neqr.py`).
+- [x] Lossless statevector decoders verified with $\text{PSNR} > 60\text{ dB}$ (infinite fidelity) under ideal $p=0$ simulation.
+- [x] Finite shot-based measurement sampling decoders implemented for both FRQI (trigonometric $\arcsin$) and NEQR (majority-vote bitstring).
+- [x] Qiskit Aer open-system quantum noise channels implemented (Depolarizing, Thermal Relaxation $T_1/T_2$, Asymmetric Readout Confusion, Composite NISQ model) (`src/noise/channels.py`, `src/noise/readout.py`).
+- [x] Quantitative evaluation metrics engine implemented: PSNR, MSE, SSIM with dynamic micro-resolution windowing (`src/metrics/image_metrics.py`), and quantum state fidelity $\mathcal{F}$ + DAG depth/CNOT counter (`src/metrics/quantum_metrics.py`).
+- [x] Automated unit test suite completed with 14 passing tests (`tests/test_encoding.py`, `tests/test_noise.py`, `tests/test_metrics.py`, `tests/test_denoising.py`).
+- [x] Unified CLI pipeline runner & `--demo` mode implemented and verified end-to-end (`main.py`).
+- [x] Comprehensive architectural design, PEAS, and research roadmap documented (`PLAN.md`).
+
+### Phase 2 — Quantum-Assisted Denoising Engine & Classical Benchmark Suite
+
+- [x] Classical baseline filter suite implemented (Mean, Median, Gaussian, Bilateral via OpenCV).
+- [x] High-fidelity classical BM3D comparative wrapper implemented (`src/classical_denoising/bm3d_wrapper.py`).
+- [x] Quantum Haar Wavelet Transform (QHWT) circuit implemented with frequency sub-band decomposition ($|LL\rangle, |LH\rangle, |HL\rangle, |HH\rangle$).
+- [x] Detail coefficient quantum thresholding operator implemented with parameterized phase/rotation gates.
+- [x] Quantum Spatial Moving Average filter implemented using reversible quantum adders for NEQR neighborhood averaging.
+- [x] Unit tests for quantum denoising circuit unitary correctness and edge-preservation passing.
+- [ ] Variational Quantum Denoising Autoencoder (VQDAE) ansatz implemented in PennyLane with parameter optimization loops.
+
+### Phase 3A — Real-Time Simulation Streaming Bridge (FastAPI & WebSockets)
+
+- [ ] Asynchronous FastAPI server (`api/server.py`) operational with `/ws/simulate` and `/api/health`.
+- [ ] In-process non-blocking event dispatcher (`api/event_bus.py`) publishing typed JSON events to WebSocket subscribers.
+- [ ] Pydantic v2 schemas (`api/schemas.py`) validating client simulation parameters and outgoing telemetry payloads.
+- [ ] Telemetry events typed: `STAGE_STARTED`, `CIRCUIT_COMPILED`, `STATEVECTOR_UPDATED`, `SHOTS_ACCUMULATED`, `FRAME_RECONSTRUCTED`, `PHASE_CRIT_FOUND`.
+- [ ] WebSocket handshake and event-loop integration tests passing.
+
+### Phase 3B — Modular Real-Time Next.js 15 Visual Studio
+
+- [ ] Next.js 15 (React 19) App Router project initialized with Tailwind CSS v4 and Obsidian Dark theme.
+- [ ] Centralized Zustand store (`ui/src/lib/quantumStore.ts`) synchronizing pipeline state with RAF 60 FPS throttling.
+- [ ] Resilient WebSocket hook (`ui/src/lib/useQuantumStream.ts`) with auto-reconnection and event buffering.
+- [ ] Modular process stage components operational:
+  - [ ] `StageIngestion.tsx`: Resolution grid canvas ($4 \times 4$ to $32 \times 32$), histogram, pattern generator.
+  - [ ] `StageEncoding.tsx`: FRQI/NEQR selector, interactive circuit DAG, superposition probability bars.
+  - [ ] `StageNoiseChamber.tsx`: Interactive 3D Bloch sphere decoherence (Three.js/R3F), noise parameter sliders.
+  - [ ] `StageDenoiseArena.tsx`: Split-screen slider comparing Quantum Filter vs Classical Baselines.
+  - [ ] `StageTomography.tsx`: Monte Carlo shot accumulator and progressive raster reconstruction.
+  - [ ] `StageAnalytics.tsx`: KPI delta gauges, live $p_{\text{crit}}$ phase curve, advantage verdict chip.
+- [ ] Interactive UI verified end-to-end against live Python simulation backend.
+
+### Phase 4 — Large-Scale Empirical Evaluation & Phase Transition Benchmarks
+
+- [ ] Automated experimental sweep scripts executed (`run_noise_sweep.py`, `run_bitflip_study.py`, `run_denoising_benchmark.py`).
+- [ ] Minimum 500 distinct simulation runs executed covering all 5 noise channels across $p \in [10^{-4}, 10^{-1}]$ and shot budgets $N_{\text{shots}} \in [10^3, 10^6]$.
+- [ ] NEQR color-qubit bit-position sensitivity matrix logged across $C_0$ to $C_7$.
+- [ ] Critical noise threshold $p_{\text{crit}}$ numerically derived for each noise channel and image representation.
+- [ ] Breakeven circuit depth identified where quantum filtering becomes self-defeating on NISQ hardware.
+
+### Phase 5 — Research Environment Containerization & Reproducible Artifact Packaging
+
+- [ ] Multi-stage backend Dockerfile (`Dockerfile.backend`) on Python 3.12/3.14 slim with non-root security.
+- [ ] Multi-stage frontend Dockerfile (`Dockerfile.frontend`) with Next.js standalone output.
+- [ ] Multi-container `docker-compose.yml` linking simulation backend, Next.js UI, and experimental volume mounts.
+- [ ] Automated smoke test script (`scripts/docker_smoke_test.sh`) validating build, API health, and WS handshakes.
+- [ ] One-click figure reproduction script generating all paper artifacts and benchmark curves from saved experiment logs.
+
+### Phase 6 — Academic Publication, Research Manuscript & Defense Deliverables
+
+- [ ] Comprehensive IEEE Transactions/Conference format research manuscript completed (`docs/FINAL_REPORT.md` / `paper/`).
+- [ ] High-resolution publication figures generated (PSNR curves, 3D Bloch surfaces, bit-significance charts).
+- [ ] Open-source research artifact release (GitHub/Zenodo) with reproduction runbook and complete dataset checkpoints.
+- [ ] Academic presentation slide deck and live interactive thesis/defense demonstration script completed.
 
 ------------------------------------------------------------------------
 
