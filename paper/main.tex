@@ -99,7 +99,7 @@ Dabov et al. \cite{dabov2007image} & Denoising & Classical & Classical AWGN & BM
 }
 \end{table}
 
-As delineated in Table I, existing works either examine quantum representations under idealized assumptions or evaluate classical algorithms on standard classical channels. Our investigation bridges this divide by synthesizing physical open-system Kraus dynamics directly into quantum image registers, establishing the first rigorous quantitative crossover benchmark against classical baselines.
+As delineated in Table I, existing works either examine quantum representations under idealized assumptions or evaluate classical algorithms on standard classical channels. Our investigation bridges this divide by synthesizing physical open-system Kraus dynamics directly into quantum image registers, establishing a rigorous simulation-based comparative benchmark against classical baselines.
 
 \section{Background and Problem Formulation}
 To establish a rigorous mathematical foundation, we formalize the quantum state representations, open-system physical noise channels, and reconstruction objectives utilized throughout this investigation. The mathematical notations deployed across this paper are summarized in Table II.
@@ -156,7 +156,11 @@ For two-qubit entangling gates (e.g., CNOT), the channel extends to a 16-element
 
 \textit{2) Thermal Relaxation ($T_1$ and $T_2$):} Models physical energy dissipation to the cryogenic thermal bath along with transverse phase decoherence. For gate duration $t_g$, the amplitude damping decay parameter is $\gamma = 1 - e^{-t_g / T_1}$, and the phase damping parameter is $\lambda = 1 - e^{-t_g / T_{\phi}}$ where $\frac{1}{T_2} = \frac{1}{2T_1} + \frac{1}{T_{\phi}}$. The amplitude damping Kraus operators are:
 \begin{equation}
-E_0 = \begin{bmatrix} 1 & 0 \\ 0 & \sqrt{1 - \gamma} \end{bmatrix}, \quad E_1 = \begin{bmatrix} 0 & \sqrt{\gamma} \\ 0 & 0 \end{bmatrix}
+E_0^{(A)} = \begin{bmatrix} 1 & 0 \\ 0 & \sqrt{1 - \gamma} \end{bmatrix}, \quad E_1^{(A)} = \begin{bmatrix} 0 & \sqrt{\gamma} \\ 0 & 0 \end{bmatrix}
+\end{equation}
+and the pure dephasing Kraus operators representing transverse phase loss are:
+\begin{equation}
+E_0^{(P)} = \begin{bmatrix} 1 & 0 \\ 0 & \sqrt{1 - \lambda} \end{bmatrix}, \quad E_1^{(P)} = \begin{bmatrix} 0 & 0 \\ 0 & \sqrt{\lambda} \end{bmatrix}
 \end{equation}
 
 \textit{3) Asymmetric Measurement Readout Confusion:} Measurement detectors exhibit classical assignment errors parameterized by confusion matrix $\mathbf{\Lambda}$:
@@ -231,26 +235,26 @@ U_{\text{NEQR}} = \prod_{i=0}^{2^{2n}-1} \prod_{k=0}^{q-1} \Big( \text{MCX}_{|i\
 The total number of multi-controlled NOT gates scales linearly with the total number of non-zero bits: $\sum_{i} \text{popcount}(I(i)) \le q \cdot 2^{2n}$.
 
 \subsection{Quantum Haar Wavelet Transform (QHWT) Denoising Circuit}
-The 2D Haar Wavelet Transform decomposes an image into an approximation sub-band ($|LL\rangle$) capturing low-frequency luminance and three detail sub-bands: horizontal ($|LH\rangle$), vertical ($|HL\rangle$), and diagonal ($|HH\rangle$) \cite{jiang2015quantum}. In quantum computing, a 1-level 2D Haar decomposition is achieved by applying Hadamard gates to the least significant coordinate qubits $(x_0, y_0)$ of the spatial register:
+The 2D Haar Wavelet Transform decomposes visual data into an approximation sub-band ($|LL\rangle$) capturing low-frequency luminance and three directional detail sub-bands: horizontal ($|LH\rangle$), vertical ($|HL\rangle$), and diagonal ($|HH\rangle$) \cite{jiang2015quantum}. In continuous amplitude encoding (FRQI), adjacent pixel intensities are mapped to adjacent coordinate probability amplitudes. Applying Hadamard transformations to the least significant coordinate qubits $(x_0, y_0)$ induces coherent linear interference between adjacent pixel pairs:
 \begin{equation}
 U_{\text{QHWT}} = (H_{y_0} \otimes H_{x_0}) \otimes I_{\text{color}}
 \end{equation}
-Following the forward transform, high-frequency noise is attenuated by applying controlled phase rotation gates $R_z(\phi)$ targeting the detail basis states ($|01\rangle, |10\rangle, |11\rangle$), leaving the approximation basis ($|00\rangle$) unchanged. The denoised state is reconstructed by the inverse unitary:
+Under this unitary map, basis state $|00\rangle_{y_0 x_0}$ accumulates the pairwise amplitude sum $(I_{00} + I_{01} + I_{10} + I_{11})/2$, while orthogonal states $|01\rangle, |10\rangle, |11\rangle$ encode high-frequency directional gradient differences. To implement quantum thresholding, detail components are attenuated by controlled rotations $R_z(\phi)$ applied to the detail coordinate subspaces, attenuating high-frequency amplitude variance via destructive interference upon applying the inverse transform:
 \begin{equation}
 U_{\text{IQHWT}} = U_{\text{QHWT}}^\dagger = H_{y_0} \otimes H_{x_0}
 \end{equation}
-Because $H$ is self-inverse ($H^\dagger = H$), the roundtrip transformation under zero noise satisfies $U_{\text{IQHWT}} U_{\text{QHWT}} = I$, guaranteeing lossless reconstruction in the absence of physical noise.
+Because $H$ is self-inverse ($H^\dagger = H$), the transformation under zero noise satisfies $U_{\text{IQHWT}} U_{\text{QHWT}} = I$, guaranteeing lossless reconstruction in the absence of physical noise.
 
 \subsection{Quantum Spatial Neighborhood Moving Average Adder}
 To perform spatial domain filtering directly on NEQR states, we formulate a quantum moving average adder. For a $2 \times 2$ neighborhood, the smoothed pixel value is:
 \begin{equation}
 \hat{I}(x, y) = \frac{1}{4} \sum_{\Delta x=0}^1 \sum_{\Delta y=0}^1 I(x + \Delta x, y + \Delta y)
 \end{equation}
-The quantum circuit executes three sequential operations:
+The quantum circuit executes three sequential reversible operations:
 \begin{enumerate}
-    \item \textit{Coordinate Cyclic Shift:} Pauli-$X$ gates applied to coordinate registers shift spatial addresses by $+1 \pmod{2^n}$, bringing adjacent pixel amplitudes into register alignment.
-    \item \textit{Reversible Summation:} Out-of-place quantum full adders (Draper or Cuccaro adders) accumulate neighbor bitstrings into an ancilla register.
-    \item \textit{Quantum Right-Shift Division:} Division by 4 ($2^2$) is executed natively without arithmetic gates by dropping the two least significant qubits of the sum register and relabeling qubit indices.
+    \item \textit{Coordinate Cyclic Shift:} Implemented via a reversible quantum modular incrementer circuit (e.g., cascading Toffoli ripple incrementer or Draper QFT adder), mapping $|x\rangle \to |x + 1 \pmod{2^n}\rangle$, aligning adjacent spatial pixel values into register alignment (which simplifies to a single Pauli-$X$ gate on 1-bit coordinate sub-registers).
+    \item \textit{Reversible Summation:} Out-of-place quantum full adders accumulate neighbor bitstrings into an ancilla register.
+    \item \textit{Quantum Right-Shift Division:} Division by 4 ($2^2$) is executed natively without arithmetic gates by dropping the two least significant carry qubits of the accumulator register and relabeling output qubit indices.
 \end{enumerate}
 
 \noindent\textbf{Design Rationale and Architectural Trade-Offs:} The selection between transform-domain (QHWT) and spatial-domain (Adder) denoising introduces fundamental circuit synthesis trade-offs. The QHWT operates exclusively within the coordinate manifold, requiring zero auxiliary ancilla qubits and maintaining a shallow gate depth of $\mathcal{O}(n)$. However, phase rotation filtering in the frequency basis is highly susceptible to dephasing noise ($T_2$). Conversely, the quantum spatial adder operates natively in the discrete computational basis, offering greater stability against dephasing. Nonetheless, reversible addition necessitates $\mathcal{O}(q)$ auxiliary carry qubits and multi-qubit Toffoli decompositions, significantly expanding the transpiled CNOT count. On NISQ processors without fault-tolerant error correction, this expanded entangling depth directly accelerates environmental decoherence.
@@ -339,22 +343,22 @@ Compute metrics: $\text{PSNR}(I, \hat{I}_{\text{Q}})$, $\text{PSNR}(I, \hat{I}_{
 \subsection{Theoretical Analysis: The NEQR Bit-Significance Variance Theorem}
 A central theoretical result established in this paper concerns how physical bit-flip errors translate into radiometric distortion in NEQR states. In classical transmission, bit error rates assume symmetric corruption across channels. In NEQR, however, physical noise acts uniformly on all color register qubits, creating an exponential disparity in reconstructed pixel error. We formalize and prove this result in Theorem 1:
 
-\noindent\textbf{Theorem 1 (NEQR Bit-Significance Variance Theorem).} \textit{Let an NEQR state encode $q$-bit grayscale pixel values $C = \sum_{k=0}^{q-1} C^k 2^k$. Suppose each color qubit $q_k$ is subjected to an independent physical bit-flip channel with probability $p_X \in [0, 1/2]$. Then the expected reconstructed Mean Squared Error $\mathbb{E}[\text{MSE}]$ satisfies:}
+\noindent\textbf{Theorem 1 (NEQR Bit-Significance Variance Theorem).} \textit{Let an NEQR state encode $q$-bit grayscale pixel values $C = \sum_{k=0}^{q-1} C^k 2^k$. Suppose each color register qubit $q_k$ is subjected to an independent physical bit-flip channel with probability $p_X \in [0, 1/2]$. Under pairwise decorrelated bit planes across the image pixel ensemble ($\frac{1}{N}\sum_{i=0}^{N-1} (-1)^{C_i^j \oplus C_i^k} \approx 0$ for $j \ne k$), the expected Mean Squared Error $\mathbb{E}[\text{MSE}]$ satisfies:}
 \begin{equation}
-\mathbb{E}\big[(C_{\text{noisy}} - C_{\text{clean}})^2\big] = p_X (1 - p_X) \frac{4^q - 1}{3}
+\mathbb{E}\big[\text{MSE}\big] = p_X (1 - p_X) \frac{4^q - 1}{3} + \mathcal{O}(p_X^2)
 \end{equation}
 
-\noindent\textit{Proof.} Let $X_k \in \{0, 1\}$ be independent Bernoulli random variables representing a bit-flip on qubit $k$, such that $P(X_k = 1) = p_X$ and $P(X_k = 0) = 1 - p_X$. The corrupted bit value is $C_{\text{noisy}}^k = C_{\text{clean}}^k \oplus X_k$. The intensity deviation is:
+\noindent\textit{Proof.} Let $X_k \in \{0, 1\}$ be independent Bernoulli random variables representing a bit-flip on qubit $k$, with $P(X_k = 1) = p_X$ and $P(X_k = 0) = 1 - p_X$. The corrupted bit is $C_{\text{noisy}}^k = C_{\text{clean}}^k \oplus X_k$. The intensity deviation for pixel $i$ is:
 \begin{equation}
-\Delta C = C_{\text{noisy}} - C_{\text{clean}} = \sum_{k=0}^{q-1} 2^k \Big( (C_{\text{clean}}^k \oplus X_k) - C_{\text{clean}}^k \Big) = \sum_{k=0}^{q-1} 2^k (-1)^{C_{\text{clean}}^k} X_k
+\Delta C_i = C_{\text{noisy}, i} - C_{\text{clean}, i} = \sum_{k=0}^{q-1} 2^k \Big( (C_{i}^k \oplus X_k) - C_{i}^k \Big) = \sum_{k=0}^{q-1} 2^k (-1)^{C_{i}^k} X_k
 \end{equation}
-Taking the expectation of the squared error:
+Taking the expectation of the squared pixel error over the noise distribution:
 \begin{equation}
-\mathbb{E}\big[(\Delta C)^2\big] = \mathbb{E}\left[ \left( \sum_{k=0}^{q-1} 2^k (-1)^{C_{\text{clean}}^k} X_k \right)^2 \right] = \sum_{k=0}^{q-1} 4^k \mathbb{E}[X_k^2] + \sum_{j \ne k} 2^{j+k} (-1)^{C_{\text{clean}}^j + C_{\text{clean}}^k} \mathbb{E}[X_j X_k]
+\mathbb{E}\big[(\Delta C_i)^2\big] = \sum_{k=0}^{q-1} 4^k \mathbb{E}[X_k^2] + \sum_{j \ne k} 2^{j+k} (-1)^{C_{i}^j \oplus C_{i}^k} \mathbb{E}[X_j X_k]
 \end{equation}
-Since $X_k$ are Bernoulli variables, $\mathbb{E}[X_k^2] = p_X$. Because noise acts independently across distinct physical qubits, for $j \ne k$ we have $\mathbb{E}[X_j X_k] = \mathbb{E}[X_j]\mathbb{E}[X_k] = p_X^2$. For an image with balanced bit statistics ($\mathbb{E}[(-1)^{C_{\text{clean}}^k}] = 0$), the cross-terms vanish in expectation over the pixel ensemble:
+Since $X_k \in \{0, 1\}$ are Bernoulli variables with variance $p_X(1-p_X)$, $\mathbb{E}[X_k^2] = p_X$. Because physical noise acts independently across distinct physical qubits, for $j \ne k$ we have $\mathbb{E}[X_j X_k] = \mathbb{E}[X_j]\mathbb{E}[X_k] = p_X^2$. Averaging across the image ensemble of $N$ pixels, the spatial cross-correlation coefficient is $\rho_{jk} = \frac{1}{N} \sum_{i=0}^{N-1} (-1)^{C_i^j \oplus C_i^k}$. For natural images with pairwise decorrelated bit planes ($\rho_{jk} \approx 0$) and noting that $p_X^2 \ll p_X$ in the near-term regime ($p_X \le 0.01 \implies p_X^2 \le 10^{-4}$), the second-order cross-terms vanish to leading order:
 \begin{equation}
-\mathbb{E}\big[(\Delta C)^2\big] = p_X(1 - p_X) \sum_{k=0}^{q-1} 4^k = p_X(1 - p_X) \frac{4^q - 1}{3}
+\mathbb{E}\big[\text{MSE}\big] = \frac{1}{N}\sum_{i=0}^{N-1} \mathbb{E}\big[(\Delta C_i)^2\big] = p_X(1 - p_X) \sum_{k=0}^{q-1} 4^k = p_X(1 - p_X) \frac{4^q - 1}{3}
 \end{equation}
 This completes the proof. $\blacksquare$
 
@@ -383,7 +387,7 @@ Rather than relying on toy synthetic binary digits (such as standard MNIST, whic
 All quantum simulations and algorithmic pipelines were developed in Python 3.10 utilizing Qiskit 1.2, Qiskit Aer 0.14, NumPy 1.26, SciPy 1.13, and OpenCV 4.9. Circuits were synthesized, decomposed into hardware-native basis gates ($\{R_z, \sqrt{X}, X, \text{CNOT}\}$), and optimized using Qiskit's PassManager at optimization level 2 to eliminate redundant single-qubit rotations. Simulations were executed across two complementary execution regimes:
 \begin{enumerate}
     \item \textit{Analytical Statevector and Density Matrix Simulation:} Executed via Qiskit Aer's high-performance C++ simulation engine, enabling exact mathematical tracking of density operators $\rho$ across the complete $2^{2n+q}$-dimensional Hilbert space, providing machine-precision verification of theoretical theorems without stochastic sampling variance.
-    \item \textit{Monte Carlo Noisy Shot-Based Simulation:} Incorporating full open-system Kraus operators, thermal relaxation decay, and stochastic measurement assignment confusion calibrated directly against operational hardware telemetry from the 127-qubit IBM Eagle processor (\texttt{ibm\_brisbane}) and Heron processor (\texttt{ibm\_kyoto}).
+    \item \textit{Monte Carlo Noisy Shot-Based Simulation:} Incorporating full open-system Kraus operators, thermal relaxation decay, and stochastic measurement assignment confusion calibrated directly against operational hardware telemetry from the 127-qubit IBM Eagle processor (\texttt{ibm\_brisbane}) and Heron processor (\texttt{ibm\_kyoto}). We explicitly distinguish these classical numerical simulations under hardware-derived noise parameters from direct execution on physical QPUs, noting that hardware routing on planar heavy-hex topologies would introduce additional SWAP gate overhead.
 \end{enumerate}
 
 \subsection{Baseline Classical Filter Suite}
@@ -454,7 +458,7 @@ Composite NISQ Mimic & $17.25 \pm 0.61$ & $17.82 \pm 0.58$ & $18.15 \pm 0.54$ & 
 }
 \end{table}
 
-Table IV presents the quantitative restoration results, while Fig. 4 illustrates the qualitative visual restoration matrix on the USC-SIPI Cameraman photographic benchmark. As observed from Table IV and Fig. 4, classical BM3D achieves the highest PSNR across all physical noise channels, outperforming in-register quantum denoising circuits by $4.5$ to $6.6\text{ dB}$, while simultaneously achieving superior structural correlation with an SSIM of $0.886 \pm 0.011$ compared to $0.722 \pm 0.018$ for the Quantum Haar filter. 
+Table IV presents the quantitative restoration results, while Fig. 3 illustrates the qualitative visual restoration matrix on the USC-SIPI Cameraman photographic benchmark. As observed from Table IV and Fig. 3, classical BM3D achieves the highest PSNR across all physical noise channels, outperforming in-register quantum denoising circuits by $4.5$ to $6.6\text{ dB}$, while simultaneously achieving superior structural correlation with an SSIM of $0.886 \pm 0.011$ compared to $0.722 \pm 0.018$ for the Quantum Haar filter. 
 
 \begin{figure}[htbp]
 \centering
@@ -463,14 +467,14 @@ Table IV presents the quantitative restoration results, while Fig. 4 illustrates
 \label{fig:visual_comparison}
 \end{figure}
 
-Under pure $T_1$ amplitude damping, unfiltered FRQI degrades catastrophically to $18.42\text{ dB}$. This degradation occurs because physical energy relaxation $|1\rangle \to |0\rangle$ on the single color qubit drives the continuous rotation angle $\theta_i \to 0$, causing systematic luminance decay and image darkening. In contrast, NEQR maintains computational basis stability under moderate $T_1$ relaxation because relaxation errors merely shift states towards the ground state $|00\dots 0\rangle$ without corrupting relative phase angles in the coordinate manifold. This confirms that discrete computational basis encoding possesses fundamentally superior physical resilience to thermal dissipation compared to continuous amplitude encoding.
+Under pure $T_1$ amplitude damping, unfiltered FRQI degrades catastrophically to $18.42\text{ dB}$. This degradation occurs because physical energy relaxation $|1\rangle \to |0\rangle$ on the single color qubit drives the continuous rotation angle $\theta_i \to 0$, causing global luminance decay and contrast collapse across all pixels simultaneously. In NEQR, $T_1$ amplitude damping on the $q$ color qubits acts as an asymmetric decay channel ($|1\rangle \to |0\rangle$), systematically attenuating active pixel bit values towards darker intensities. However, because NEQR's spatial coordinate superposition remains separated in the address register, relaxation does not distort the coordinate manifold itself, preserving spatial structural boundaries better than continuous amplitude mixing.
 
 \subsection{Evaluation of RQ2: Non-Local Error Propagation}
 To assess error propagation dynamics, we systematically injected isolated single-qubit bit-flip ($X$) and phase-flip ($Z$) perturbations onto specific physical qubits within transpiled circuits.
 
 When a bit-flip error was injected into the spatial coordinate register $|x_0\rangle$ of an NEQR state, the error did not remain confined to an isolated spatial coordinate. Because spatial coordinate qubits serve as simultaneous controls for cascading multi-controlled NOT gates during state synthesis, an inversion of $|x_0\rangle$ simultaneously inverted coordinate addressing across the entire alternating column grid. This induced widespread, non-local periodic striping artifacts across the reconstructed image, demonstrating that spatial entanglement converts microscopic hardware gate errors into macroscopic visual artifacts.
 
-Furthermore, empirical testing rigorously confirmed the analytical predictions of Theorem 1 (NEQR Bit-Significance Variance Theorem), as plotted in Fig. 5. Injecting independent bit-flips into color qubit $C_7$ (the Most Significant Bit, MSB) caused catastrophic radiometric intensity jumps of $\pm 128$, reducing PSNR by over $18.4\text{ dB}$ and yielding visual distortion with an MSE exceeding $215$. In sharp contrast, injecting identical bit-flips into $C_0$ (the Least Significant Bit, LSB) caused negligible intensity shifts of $\pm 1$, reducing PSNR by less than $0.12\text{ dB}$. As demonstrated in Fig. 5, the error ratio between $C_7$ and $C_0$ exceeds $16,384\times$, validating the theoretical $(4^q - 1)/3$ trajectory with an empirical regression fit of $R^2 = 0.9972$. This confirms that unmitigated computational basis encoding suffers from an exponential vulnerability hierarchy across its register bits.
+Furthermore, empirical testing rigorously confirmed the analytical predictions of Theorem 1 (NEQR Bit-Significance Variance Theorem), as plotted in Fig. 4. Injecting independent bit-flips into color qubit $C_7$ (the Most Significant Bit, MSB) caused catastrophic radiometric intensity jumps of $\pm 128$, reducing PSNR by over $18.4\text{ dB}$ and yielding visual distortion with an MSE exceeding $215$. In sharp contrast, injecting identical bit-flips into $C_0$ (the Least Significant Bit, LSB) caused negligible intensity shifts of $\pm 1$, reducing PSNR by less than $0.12\text{ dB}$. As demonstrated in Fig. 4, the error ratio between $C_7$ and $C_0$ exceeds $16,384\times$, validating the theoretical $(4^q - 1)/3$ trajectory with an empirical regression fit of $R^2 = 0.9972$. This confirms that unmitigated computational basis encoding suffers from an exponential vulnerability hierarchy across its register bits.
 
 \begin{figure}[htbp]
 \centering
@@ -553,9 +557,9 @@ Under ideal simulation conditions ($p=0$), both quantum filters perform as theor
 \end{figure}
 
 \subsection{Evaluation of RQ4: The Quantum Advantage Horizon ($p_{\text{crit}}$)}
-Fig. 3 illustrates the scaling trajectory of reconstruction PSNR across four decades of physical gate error rates $p \in [10^{-4}, 10^{-1}]$. As shown in Fig. 3, classical BM3D maintains clear visual dominance over the entire operational spectrum, providing consistent gains of $4.5$ to $6.0\text{ dB}$ over in-register quantum filtering.
+Fig. 5 illustrates the scaling trajectory of reconstruction PSNR across four decades of physical gate error rates $p \in [10^{-4}, 10^{-1}]$. As shown in Fig. 5, classical BM3D maintains clear visual dominance over the entire operational spectrum, providing consistent gains of $4.5$ to $6.0\text{ dB}$ over in-register quantum filtering.
 
-Critically, Fig. 3 reveals an empirical phase transition at the critical noise threshold $p_{\text{crit}} \approx 0.008$. When physical gate error rates exceed $p_{\text{crit}}$, the Quantum QHWT curve intersects and drops below the raw unfiltered baseline curve. In this high-noise regime, the physical entropy injected by the 24 additional quantum gate layers exceeds the high-frequency variance removed by the filter unitary. Executing a quantum denoising circuit on noisy hardware actively degrades image quality, demonstrating that in-register quantum restoration possesses a narrow operational window.
+Critically, Fig. 5 reveals an empirical phase transition at the critical noise threshold $p_{\text{crit}} \approx 0.008$. When physical gate error rates exceed $p_{\text{crit}}$, the Quantum QHWT curve intersects and drops below the raw unfiltered baseline curve. In this high-noise regime, the physical entropy injected by the 24 additional quantum gate layers exceeds the high-frequency variance removed by the filter unitary. Executing a quantum denoising circuit on noisy hardware actively degrades image quality, demonstrating that in-register quantum restoration possesses a narrow operational window.
 
 \subsection{Ablation Studies: Color Bit-Depth and Measurement Convergence}
 To evaluate architectural sensitivities, we conducted two systematic ablation studies:
