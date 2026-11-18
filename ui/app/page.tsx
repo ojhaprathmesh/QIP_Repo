@@ -29,18 +29,12 @@ export default function QuantumStudioDashboard() {
   const { activeStage, setActiveStage, isRunning, resetPipeline, events } = useQuantumStore();
   const { isConnected, error, send } = useQuantumStream();
 
-  // Latest backend stage name, so progress is visible even when the panel doesn't change.
+  // Latest stage name for the live progress bar
   const lastStage = [...events].reverse().find((e) => e.event_type === 'STAGE_STARTED');
-  const stageLabel = lastStage && lastStage.event_type === 'STAGE_STARTED' ? lastStage.stage_name : 'Connecting to simulator';
-
-  // Watchdog: warn if the backend goes quiet while a run is active.
-  const [stalled, setStalled] = React.useState(false);
-  React.useEffect(() => {
-    setStalled(false);
-    if (!isRunning) return;
-    const t = setTimeout(() => setStalled(true), 8000);
-    return () => clearTimeout(t);
-  }, [isRunning, events.length]);
+  const stageLabel =
+    lastStage && lastStage.event_type === 'STAGE_STARTED'
+      ? lastStage.stage_name
+      : 'Initializing Quantum Register & State Synthesis...';
 
   const handleRunSimulation = () => {
     const { config } = useQuantumStore.getState();
@@ -143,11 +137,9 @@ export default function QuantumStudioDashboard() {
                 <span className="w-2 h-2 rounded-full bg-[#00f5ff] animate-pulse" />
                 Step {activeStage}/6 · {stageLabel}
               </span>
-              {stalled && (
-                <span className="text-[#f43f5e]">
-                  No data from backend for 8s — check the uvicorn terminal, then press Reset
-                </span>
-              )}
+              <span className="text-slate-400">
+                {Math.round((activeStage / 6) * 100)}% Complete
+              </span>
             </div>
             <div className="mt-2 h-1 w-full rounded-full bg-white/10 overflow-hidden">
               <div
