@@ -26,8 +26,21 @@ const DEFAULT_SIMULATION_REQUEST: SimulationRequest = {
 };
 
 export default function QuantumStudioDashboard() {
-  const { activeStage, setActiveStage, isRunning, resetPipeline } = useQuantumStore();
+  const { activeStage, setActiveStage, isRunning, resetPipeline, events } = useQuantumStore();
   const { isConnected, error, send } = useQuantumStream();
+
+  // Latest backend stage name, so progress is visible even when the panel doesn't change.
+  const lastStage = [...events].reverse().find((e) => e.event_type === 'STAGE_STARTED');
+  const stageLabel = lastStage && lastStage.event_type === 'STAGE_STARTED' ? lastStage.stage_name : 'Connecting to simulator';
+
+  // Watchdog: warn if the backend goes quiet while a run is active.
+  const [stalled, setStalled] = React.useState(false);
+  React.useEffect(() => {
+    setStalled(false);
+    if (!isRunning) return;
+    const t = setTimeout(() => setStalled(true), 8000);
+    return () => clearTimeout(t);
+  }, [isRunning, events.length]);
 
   const handleRunSimulation = () => {
     const { config } = useQuantumStore.getState();
@@ -122,6 +135,29 @@ export default function QuantumStudioDashboard() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+        {/* Live run status */}
+        {isRunning && (
+          <section className="rounded-xl border border-[#00f5ff]/30 bg-[#00f5ff]/5 px-4 py-3">
+            <div className="flex items-center justify-between text-xs font-mono">
+              <span className="flex items-center gap-2 text-[#00f5ff]">
+                <span className="w-2 h-2 rounded-full bg-[#00f5ff] animate-pulse" />
+                Step {activeStage}/6 · {stageLabel}
+              </span>
+              {stalled && (
+                <span className="text-[#f43f5e]">
+                  No data from backend for 8s — check the uvicorn terminal, then press Reset
+                </span>
+              )}
+            </div>
+            <div className="mt-2 h-1 w-full rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#00f5ff] to-[#a855f7] transition-all duration-700"
+                style={{ width: `${(activeStage / 6) * 100}%` }}
+              />
+            </div>
+          </section>
+        )}
+
         {/* Pipeline Stepper */}
         <section>
           <PipelineStepper
