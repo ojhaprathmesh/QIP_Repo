@@ -1,4 +1,5 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocketDisconnected
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Dict, Any, List
 import asyncio
@@ -12,6 +13,9 @@ from .schemas import SimulationRequest, STAGE_STARTED, CIRCUIT_COMPILED, STATEVE
 from .event_bus import EventBus
 
 app = FastAPI()
+
+# Raised (depending on Starlette version/state) when the browser closed the socket.
+CLIENT_GONE = (WebSocketDisconnect, WebSocketDisconnected)
 
 # CORS middleware
 app.add_middleware(
@@ -67,11 +71,11 @@ async def websocket_simulate(websocket: WebSocket):
             try:
                 request = SimulationRequest(**json.loads(data))
                 await simulate_pipeline(request, websocket, bus)
-            except WebSocketDisconnect:
+            except CLIENT_GONE:
                 raise
             except Exception as e:
                 await websocket.send_text(json.dumps({"error": str(e)}))
-    except WebSocketDisconnect:
+    except CLIENT_GONE:
         print("Client disconnected")
 
 
@@ -183,10 +187,9 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
 
 
 async def forward_event(event_type: str, event_data: Dict[str, Any], websocket: WebSocket) -> None:
-    try:
-        await websocket.send_text(json.dumps({**{"event_type": event_type}, **event_data}))
-    except Exception:
-        pass  # client went away mid-stream
+    # Let a closed-socket error propagate so the pipeline stops instead of
+    # streaming to nobody for the rest of the run.
+    await websocket.send_text(json.dumps({**{"event_type": event_type}, **event_data}))
 
 
 async def register_event_handlers(bus: EventBus, websocket: WebSocket) -> None:
