@@ -13,6 +13,7 @@ class SimulationRequest(BaseModel):
     bit_depth: int = Field(8, description="Color register bit-depth q (8 or 4)")
     interpolation: str = Field("area", description="Downsampling kernel (area, bilinear, nearest)")
     gamma: float = Field(1.0, description="Radiometric gamma correction")
+    step_mode: str = Field("auto", description="Execution flow mode: 'auto' or 'manual'")
     custom_pixels: Optional[List[List[float]]] = Field(None, description="Preprocessed custom real-world image matrix in [0, 1]")
 
 class STAGE_STARTED(BaseModel):

@@ -13,6 +13,8 @@ interface UseQuantumStreamReturn {
   isConnected: boolean;
   error: string | null;
   send: (request: SimulationRequest) => void;
+  advanceStep: () => void;
+  changeStepMode: (mode: 'auto' | 'manual') => void;
 }
 
 const DEFAULT_WS_URL = 'ws://localhost:8000/ws/simulate';
@@ -97,12 +99,61 @@ export function useQuantumStream(
   const wsRef = useRef<WebSocket | null>(null);
   const runIdRef = useRef<number>(0);
   const isUnmountedRef = useRef<boolean>(false);
+  const manualGateResolverRef = useRef<(() => void) | null>(null);
 
   const targetUrl = options?.url || DEFAULT_WS_URL;
 
   const dispatchEvent = useCallback((ev: QuantumEvent) => {
     if (isUnmountedRef.current) return;
     useQuantumStore.getState().handleEvent(ev);
+  }, []);
+
+  const advanceStep = useCallback(() => {
+    useQuantumStore.getState().setAwaitingNextStep(false);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({ action: 'next_stage' }));
+      } catch {
+        // ignore
+      }
+    }
+    if (manualGateResolverRef.current) {
+      const resolve = manualGateResolverRef.current;
+      manualGateResolverRef.current = null;
+      resolve();
+    }
+  }, []);
+
+  const changeStepMode = useCallback((mode: 'auto' | 'manual') => {
+    useQuantumStore.getState().setStepMode(mode);
+    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+      try {
+        wsRef.current.send(JSON.stringify({ action: 'set_mode', mode }));
+      } catch {
+        // ignore
+      }
+    }
+    if (mode === 'auto') {
+      useQuantumStore.getState().setAwaitingNextStep(false);
+      if (manualGateResolverRef.current) {
+        const resolve = manualGateResolverRef.current;
+        manualGateResolverRef.current = null;
+        resolve();
+      }
+    }
+  }, []);
+
+  const waitOrPauseStage = useCallback(async (alive: () => boolean) => {
+    if (!alive()) return;
+    if (useQuantumStore.getState().stepMode === 'manual') {
+      useQuantumStore.getState().setAwaitingNextStep(true);
+      await new Promise<void>((resolve) => {
+        manualGateResolverRef.current = resolve;
+      });
+      useQuantumStore.getState().setAwaitingNextStep(false);
+    } else {
+      await sleep(1250);
+    }
   }, []);
 
   // Self-contained client-side 6-stage simulator fallback (runs if backend WS is reloading/slow)
@@ -128,6 +179,7 @@ export function useQuantumStream(
       // Stage 1: Ingestion
       await startStage(1, 'Image Ingestion & Spatial Discretization');
       await sleep(1100);
+      await waitOrPauseStage(alive);
       if (!alive()) return;
 
       // Stage 2: Encoding & Circuit Compilation
@@ -148,7 +200,7 @@ export function useQuantumStream(
         });
         await sleep(280);
       }
-      await sleep(1250);
+      await waitOrPauseStage(alive);
       if (!alive()) return;
 
       // Stage 3: Open-System Kraus Noise Chamber
@@ -168,7 +220,7 @@ export function useQuantumStream(
         });
         await sleep(280);
       }
-      await sleep(1250);
+      await waitOrPauseStage(alive);
       if (!alive()) return;
 
       // Stage 4: Quantum vs. Classical Denoising Arena
@@ -205,7 +257,7 @@ export function useQuantumStream(
         });
         await sleep(320);
       }
-      await sleep(1250);
+      await waitOrPauseStage(alive);
       if (!alive()) return;
 
       // Stage 5: Projective Tomography & Shot Sampling
@@ -234,7 +286,7 @@ export function useQuantumStream(
         });
         await sleep(220);
       }
-      await sleep(1250);
+      await waitOrPauseStage(alive);
       if (!alive()) return;
 
       // Stage 6: Phase Criticality & Quantum Advantage Horizon
@@ -252,7 +304,7 @@ export function useQuantumStream(
         advantage_verdict: verdict,
       });
     },
-    [dispatchEvent]
+    [dispatchEvent, waitOrPauseStage]
   );
 
   // Lightweight HTTP health poll so we never hold an idle WebSocket open that blocks uvicorn --reload
@@ -355,8 +407,18 @@ export function useQuantumStream(
               triggerFallback();
               return;
             }
+            if (parsed?.status === 'awaiting_next_stage') {
+              clearTimeout(watchdog);
+              if (useQuantumStore.getState().stepMode === 'manual') {
+                useQuantumStore.getState().setAwaitingNextStep(true);
+              } else {
+                ws.send(JSON.stringify({ action: 'next_stage' }));
+              }
+              return;
+            }
             if (parsed?.status === 'completed') {
               clearTimeout(watchdog);
+              useQuantumStore.getState().setAwaitingNextStep(false);
               try {
                 ws.close();
               } catch {
@@ -394,5 +456,5 @@ export function useQuantumStream(
     [targetUrl, dispatchEvent, runClientFallbackStream]
   );
 
-  return { isConnected, error, send };
+  return { isConnected, error, send, advanceStep, changeStepMode };
 }

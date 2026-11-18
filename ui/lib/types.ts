@@ -10,6 +10,7 @@ export interface SimulationRequest {
   bit_depth?: number;
   interpolation?: string;
   gamma?: number;
+  step_mode?: 'auto' | 'manual';
   custom_pixels?: number[][] | null;
 }
 
@@ -79,8 +80,12 @@ export interface IngestionConfig {
 
 export interface PipelineState {
   activeStage: number;
+  stepMode: 'auto' | 'manual';
+  awaitingNextStep: boolean;
   config: IngestionConfig;
   setConfig: (config: Partial<IngestionConfig>) => void;
+  setStepMode: (mode: 'auto' | 'manual') => void;
+  setAwaitingNextStep: (waiting: boolean) => void;
   circuitInfo: CircuitCompiledEvent | null;
   statevector: StatevectorUpdatedEvent | null;
   shotsProgress: ShotsAccumulatedEvent | null;

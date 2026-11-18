@@ -3,6 +3,8 @@ import { PipelineState, QuantumEvent } from './types';
 
 export const useQuantumStore = create<PipelineState>((set) => ({
   activeStage: 1,
+  stepMode: 'manual',
+  awaitingNextStep: false,
   config: {
     resolution: 16,
     pattern: 'cameraman',
@@ -16,6 +18,8 @@ export const useQuantumStore = create<PipelineState>((set) => ({
     custom_image_name: null,
   },
   setConfig: (config) => set((state) => ({ config: { ...state.config, ...config } })),
+  setStepMode: (stepMode) => set({ stepMode }),
+  setAwaitingNextStep: (awaitingNextStep) => set({ awaitingNextStep }),
   circuitInfo: null,
   statevector: null,
   shotsProgress: null,
@@ -29,6 +33,7 @@ export const useQuantumStore = create<PipelineState>((set) => ({
   startSimulation: () =>
     set({
       isRunning: true,
+      awaitingNextStep: false,
       circuitInfo: null,
       statevector: null,
       shotsProgress: null,
@@ -41,6 +46,7 @@ export const useQuantumStore = create<PipelineState>((set) => ({
   resetPipeline: () =>
     set({
       activeStage: 1,
+      awaitingNextStep: false,
       circuitInfo: null,
       statevector: null,
       shotsProgress: null,

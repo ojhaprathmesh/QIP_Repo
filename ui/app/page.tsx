@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Play, RotateCcw, Activity } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { Play, RotateCcw, Activity, ChevronRight } from 'lucide-react';
 import PipelineStepper from '@/components/shared/PipelineStepper';
 import { useQuantumStore } from '@/lib/quantumStore';
 import { useQuantumStream } from '@/lib/useQuantumStream';
@@ -13,6 +13,15 @@ import StageNoiseChamber from '@/components/stages/StageNoiseChamber';
 import StageDenoiseArena from '@/components/stages/StageDenoiseArena';
 import StageTomography from '@/components/stages/StageTomography';
 import StageAnalytics from '@/components/stages/StageAnalytics';
+
+const STAGE_TITLES: Record<number, string> = {
+  1: 'Ingestion',
+  2: 'Encoding',
+  3: 'Noise Chamber',
+  4: 'Denoising',
+  5: 'Tomography',
+  6: 'Analytics',
+};
 
 const DEFAULT_SIMULATION_REQUEST: SimulationRequest = {
   resolution: 4,
@@ -26,8 +35,16 @@ const DEFAULT_SIMULATION_REQUEST: SimulationRequest = {
 };
 
 export default function QuantumStudioDashboard() {
-  const { activeStage, setActiveStage, isRunning, resetPipeline, events } = useQuantumStore();
-  const { isConnected, error, send } = useQuantumStream();
+  const {
+    activeStage,
+    setActiveStage,
+    isRunning,
+    resetPipeline,
+    events,
+    stepMode,
+    awaitingNextStep,
+  } = useQuantumStore();
+  const { isConnected, error, send, advanceStep, changeStepMode } = useQuantumStream();
 
   // Latest stage name for the live progress bar
   const lastStage = [...events].reverse().find((e) => e.event_type === 'STAGE_STARTED');
@@ -37,9 +54,24 @@ export default function QuantumStudioDashboard() {
       : 'Initializing Quantum Register & State Synthesis...';
 
   const handleRunSimulation = () => {
-    const { config } = useQuantumStore.getState();
-    send({ ...DEFAULT_SIMULATION_REQUEST, ...config });
+    const { config, stepMode: currentMode } = useQuantumStore.getState();
+    send({ ...DEFAULT_SIMULATION_REQUEST, ...config, step_mode: currentMode });
   };
+
+  // Allow advancing in Manual Step mode with Right Arrow or Space
+  useEffect(() => {
+    if (!isRunning || !awaitingNextStep) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        const tag = (e.target as HTMLElement)?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        e.preventDefault();
+        advanceStep();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [isRunning, awaitingNextStep, advanceStep]);
 
   const renderActiveStage = () => {
     switch (activeStage) {
@@ -104,6 +136,34 @@ export default function QuantumStudioDashboard() {
               </span>
             </div>
 
+            {/* Auto Flow vs Manual Step Mode Selector */}
+            <div className="flex items-center rounded-lg bg-white/[0.04] border border-white/10 p-0.5 text-xs font-mono">
+              <button
+                type="button"
+                onClick={() => changeStepMode('auto')}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  stepMode === 'auto'
+                    ? 'bg-[#00f5ff]/20 text-[#00f5ff] border border-[#00f5ff]/40 font-semibold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Automatically advance across all 6 stages"
+              >
+                Auto Flow
+              </button>
+              <button
+                type="button"
+                onClick={() => changeStepMode('manual')}
+                className={`px-2.5 py-1 rounded-md transition-all ${
+                  stepMode === 'manual'
+                    ? 'bg-[#a855f7]/25 text-[#c084fc] border border-[#a855f7]/50 font-semibold'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Pause at the end of each stage until you click Next Stage"
+              >
+                Manual Step
+              </button>
+            </div>
+
             {/* Action Buttons */}
             <button
               type="button"
@@ -114,15 +174,26 @@ export default function QuantumStudioDashboard() {
               <RotateCcw className="w-4 h-4" />
             </button>
 
-            <button
-              type="button"
-              onClick={handleRunSimulation}
-              disabled={isRunning}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00f5ff] text-[#090a0f] font-semibold text-sm hover:brightness-110 active:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(0,245,255,0.3)] glow-cyan"
-            >
-              <Play className="w-4 h-4 fill-current" />
-              <span>{isRunning ? 'Simulating...' : 'Run Simulation'}</span>
-            </button>
+            {isRunning && awaitingNextStep ? (
+              <button
+                type="button"
+                onClick={advanceStep}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-[#a855f7] to-[#00f5ff] text-[#090a0f] font-bold text-sm hover:brightness-110 active:brightness-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.45)] animate-pulse"
+              >
+                <span>Next: {STAGE_TITLES[activeStage + 1] || 'Finish'}</span>
+                <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleRunSimulation}
+                disabled={isRunning}
+                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#00f5ff] text-[#090a0f] font-semibold text-sm hover:brightness-110 active:brightness-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(0,245,255,0.3)] glow-cyan"
+              >
+                <Play className="w-4 h-4 fill-current" />
+                <span>{isRunning ? 'Simulating...' : 'Run Simulation'}</span>
+              </button>
+            )}
           </div>
         </div>
       </header>
@@ -131,15 +202,43 @@ export default function QuantumStudioDashboard() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
         {/* Live run status */}
         {isRunning && (
-          <section className="rounded-xl border border-[#00f5ff]/30 bg-[#00f5ff]/5 px-4 py-3">
-            <div className="flex items-center justify-between text-xs font-mono">
+          <section
+            className={`rounded-xl border px-4 py-3 transition-colors ${
+              awaitingNextStep
+                ? 'border-[#a855f7]/50 bg-[#a855f7]/10'
+                : 'border-[#00f5ff]/30 bg-[#00f5ff]/5'
+            }`}
+          >
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
               <span className="flex items-center gap-2 text-[#00f5ff]">
-                <span className="w-2 h-2 rounded-full bg-[#00f5ff] animate-pulse" />
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    awaitingNextStep ? 'bg-[#a855f7]' : 'bg-[#00f5ff] animate-pulse'
+                  }`}
+                />
                 Step {activeStage}/6 · {stageLabel}
+                {awaitingNextStep && (
+                  <span className="px-2 py-0.5 rounded bg-[#a855f7]/25 text-[#e9d5ff] border border-[#a855f7]/40 text-[11px]">
+                    STAGE {activeStage} READY — PAUSED (MANUAL MODE)
+                  </span>
+                )}
               </span>
-              <span className="text-slate-400">
-                {Math.round((activeStage / 6) * 100)}% Complete
-              </span>
+
+              <div className="flex items-center gap-3">
+                {awaitingNextStep && (
+                  <button
+                    type="button"
+                    onClick={advanceStep}
+                    className="flex items-center gap-1 px-3 py-1 rounded-md bg-[#00f5ff] text-[#090a0f] font-bold hover:brightness-110 transition-all shadow-[0_0_12px_rgba(0,245,255,0.4)]"
+                  >
+                    <span>Proceed to Stage {activeStage + 1}: {STAGE_TITLES[activeStage + 1]} (or press → / Space)</span>
+                    <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </button>
+                )}
+                <span className="text-slate-400">
+                  {Math.round((activeStage / 6) * 100)}% Complete
+                </span>
+              </div>
             </div>
             <div className="mt-2 h-1 w-full rounded-full bg-white/10 overflow-hidden">
               <div

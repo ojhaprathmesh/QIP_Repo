@@ -201,17 +201,43 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
     n_addr = max(1, int(math.log2(n)))
     q_bits = 4 if getattr(request, "bit_depth", 8) == 4 else 8
     qubits = 2 * n_addr + (1 if request.encoding == "frqi" else q_bits)
+    manual_mode = getattr(request, "step_mode", "auto") == "manual"
 
     async def start(stage_id: int, name: str) -> None:
         await bus.publish("STAGE_STARTED", STAGE_STARTED(
             stage_id=stage_id, stage_name=name, timestamp=loop.time()).model_dump())
         await pace(STAGE_ENTRY_PAUSE)
 
+    async def finish_stage(stage_id: int) -> None:
+        nonlocal manual_mode
+        if not manual_mode or PACING_SCALE == 0.0:
+            await pace(STAGE_SAVOR_PAUSE)
+            return
+        await websocket.send_text(json.dumps({
+            "status": "awaiting_next_stage",
+            "stage_id": stage_id,
+            "next_stage_id": stage_id + 1,
+        }))
+        while True:
+            raw = await websocket.receive_text()
+            try:
+                cmd = json.loads(raw)
+            except Exception:
+                break
+            action = cmd.get("action")
+            if action == "next_stage":
+                break
+            if action == "set_mode":
+                manual_mode = cmd.get("mode") == "manual"
+                if not manual_mode:
+                    break
+
     # -----------------------------------------------------------------------
     # Stage 1 (Tab 1: Ingestion): Validate & Normalize Input Matrix
     # -----------------------------------------------------------------------
     await start(1, "Image Ingestion & Spatial Discretization")
     await pace(INGESTION_DWELL_TIME)
+    await finish_stage(1)
 
     # -----------------------------------------------------------------------
     # Stage 2 (Tab 2: Encoding): Circuit Synthesis & Gate Transpilation
@@ -230,7 +256,7 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
             cnot_count=max(1, round(target_cnots * frac)),
         ).model_dump())
         await pace(COMPILE_TICK_TIME)
-    await pace(STAGE_SAVOR_PAUSE)
+    await finish_stage(2)
 
     # -----------------------------------------------------------------------
     # Stage 3 (Tab 3: Noise Chamber): Open-System Kraus Decoherence
@@ -246,7 +272,7 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
         await bus.publish("STATEVECTOR_UPDATED",
                           STATEVECTOR_UPDATED(amplitudes=amps, purity=round(purity, 4)).model_dump())
         await pace(STATEVECTOR_TICK_TIME)
-    await pace(STAGE_SAVOR_PAUSE)
+    await finish_stage(3)
 
     # -----------------------------------------------------------------------
     # Stage 4 (Tab 4: Denoising Arena): Progressive Wavelet / Spatial Filtering
@@ -271,7 +297,7 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
             fidelity=round(fidelity, 4),
         ).model_dump())
         await pace(FRAME_TICK_TIME)
-    await pace(STAGE_SAVOR_PAUSE)
+    await finish_stage(4)
 
     # -----------------------------------------------------------------------
     # Stage 5 (Tab 5: Tomography): Monte Carlo Projective Shot Accumulation
@@ -298,7 +324,7 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
         await bus.publish("SHOTS_ACCUMULATED", SHOTS_ACCUMULATED(
             shots_completed=done, total_shots=total, bitstring_counts=dict(counts)).model_dump())
         await pace(SHOT_TICK_TIME)
-    await pace(STAGE_SAVOR_PAUSE)
+    await finish_stage(5)
 
     # -----------------------------------------------------------------------
     # Stage 6 (Tab 6: Analytics): Phase Criticality Horizon (p_crit)
