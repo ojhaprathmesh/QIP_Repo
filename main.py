@@ -224,23 +224,52 @@ def main():
         help="Launch an individual empirical experiment suite.",
     )
 
-    args = parser.parse_args()
+    args, remaining_argv = parser.parse_known_args()
 
-    if args.demo or len(sys.argv) == 1:
+    if args.demo or (len(sys.argv) == 1):
         run_demo(
             resolution=args.resolution,
             pattern=args.pattern,
             noise_rate=args.noise_rate,
         )
-    elif args.run == "noise-sweep":
-        from src.experiments.run_noise_sweep import main as sweep_main
-        sweep_main()
-    elif args.run == "bitflip-study":
-        from src.experiments.run_bitflip_study import main as bitflip_main
-        bitflip_main()
-    elif args.run == "denoise-benchmark":
-        from src.experiments.run_denoising_benchmark import main as denoise_main
-        denoise_main()
+    elif args.run:
+        # Filter out --run and its option to cleanly forward any remaining arguments
+        sub_argv = []
+        skip_next = False
+        for arg in sys.argv[1:]:
+            if skip_next:
+                skip_next = False
+                continue
+            if arg == "--run":
+                skip_next = True
+                continue
+            if arg.startswith("--run="):
+                continue
+            sub_argv.append(arg)
+
+        old_argv = list(sys.argv)
+        sys.argv = [sys.argv[0]] + sub_argv
+        try:
+            if args.run == "noise-sweep":
+                from src.experiments.run_noise_sweep import main as sweep_main
+                try:
+                    sweep_main(sub_argv)
+                except TypeError:
+                    sweep_main()
+            elif args.run == "bitflip-study":
+                from src.experiments.run_bitflip_study import main as bitflip_main
+                try:
+                    bitflip_main(sub_argv)
+                except TypeError:
+                    bitflip_main()
+            elif args.run == "denoise-benchmark":
+                from src.experiments.run_denoising_benchmark import main as denoise_main
+                try:
+                    denoise_main(sub_argv)
+                except TypeError:
+                    denoise_main()
+        finally:
+            sys.argv = old_argv
 
 
 if __name__ == "__main__":

@@ -291,6 +291,61 @@ python test_stream.py
 
 ---
 
+### 4.4 Running the Next.js 15 Real-Time Quantum Studio (`ui/`)
+
+Phase 3B provides a modern, interactive Next.js 15 web application with 6 modular stage components, live WebSocket streaming, and Framer Motion micro-animations.
+
+#### 1. Start the FastAPI Simulation Backend:
+In terminal 1:
+```bash
+uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### 2. Start the Next.js Frontend Development Server:
+In terminal 2:
+```bash
+cd ui
+npm run dev
+```
+
+#### 3. Open in Browser:
+Visit `http://localhost:3000` to interact with:
+* **Interactive 6-Stage Pipeline Stepper:** Step through Ingestion, Encoding, Noise Chamber, Denoising Arena, Tomography, and Analytics.
+* **Live Ingestion Configurator:** Resize images ($4\times 4$ to $32\times 32$) with live dynamic qubit requirement recalculation ($2n+1$ vs $2n+q$).
+* **Real-Time Simulation Trigger:** Click **"Run Full Simulation"** to stream gate-level circuit compilation, statevector purity, Monte Carlo shot accumulation, and progressive raster reconstruction via WebSocket at 60 FPS.
+
+---
+
+### 4.5 Running Phase 4 Empirical Experiment Sweeps
+
+You can run automated parametric sweeps and save structured JSON experiment data directly to `data/experiment_results/`:
+
+#### 1. Depolarizing and Thermal Noise Sweeps (EXP-01 & EXP-02):
+```bash
+python main.py --run noise-sweep --representation both --num-points 10 --shots 10000
+```
+* Sweeps depolarizing noise $p \in [10^{-4}, 10^{-1}]$ in logarithmic steps.
+* Simulates typical and degraded superconducting relaxation profiles ($T_1, T_2$).
+* Automatically calculates crossover points $p_{\text{crit}}$ and saves to `data/experiment_results/noise_sweep.json`.
+
+#### 2. NEQR Bit-Flip Asymmetry Study (EXP-03):
+```bash
+python main.py --run bitflip-study --error-rate 0.01 --resolution 4
+```
+* Measures bit-by-bit distortion across NEQR color qubits $C_0$ (LSB) to $C_7$ (MSB).
+* Empirically validates Theorem 2 ($\Delta\text{MSE}_k \propto 2^{2k}$, $R^2 > 0.99$).
+* Saves results to `data/experiment_results/bitflip_study.json`.
+
+#### 3. Quantum vs Classical Denoising Benchmark & Breakeven Depth (EXP-04 & EXP-05):
+```bash
+python main.py --run denoise-benchmark --image shepp_logan --noise-rate 0.005 --shots 10000
+```
+* Benchmarks Quantum Haar Wavelet (QHWT) and Spatial Adder against Median, BM3D, Gaussian, and Bilateral filters.
+* Evaluates breakeven noise threshold $p_{\text{breakeven}}$ and critical depth $D_{\text{crit}}$ where quantum filters collapse.
+* Saves results to `data/experiment_results/denoising_benchmark.json`.
+
+---
+
 ## 5. Repository Structure & Key Files
 
 ```
