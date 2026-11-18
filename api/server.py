@@ -66,7 +66,7 @@ FRAME_TICKS, FRAME_TICK_TIME = 10, 0.32
 SHOT_TICKS, SHOT_TICK_TIME = 14, 0.22
 PHASE_SCAN_TIME = 1.3           # Stage 6: scan p_crit crossover before lighting verdict
 FINAL_HOLD_TIME = 0.8
-MAX_GRID = 32                   # cap frame size to keep payloads snappy
+MAX_GRID = 128                  # supports up to 128x128 (16,384 pixels) quantum registers
 
 
 async def pace(seconds: float) -> None:

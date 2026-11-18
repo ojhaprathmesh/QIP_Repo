@@ -9,6 +9,7 @@ export const StageTomography: React.FC = () => {
   const shotsProgress = useQuantumStore((state) => state.shotsProgress);
   const frameResult = useQuantumStore((state) => state.frameResult);
   const customPixels = useQuantumStore((state) => state.config.custom_pixels);
+  const rasterCanvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const shotsCompleted = shotsProgress?.shots_completed ?? 0;
   const totalShots = shotsProgress?.total_shots || 10000;
@@ -46,6 +47,28 @@ export const StageTomography: React.FC = () => {
     }
     return grid;
   }, [shotsCompleted, totalShots, frameResult, customPixels]);
+
+  React.useEffect(() => {
+    const canvas = rasterCanvasRef.current;
+    if (!canvas || rasterGrid.length <= 32) return;
+    const size = rasterGrid.length;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const imgData = ctx.createImageData(size, size);
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const byteVal = Math.round((rasterGrid[r]?.[c] ?? 0) * 255);
+        const idx = (r * size + c) * 4;
+        imgData.data[idx] = byteVal;
+        imgData.data[idx + 1] = byteVal;
+        imgData.data[idx + 2] = byteVal;
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }, [rasterGrid]);
 
   return (
     <div className="space-y-6">
@@ -155,25 +178,33 @@ export const StageTomography: React.FC = () => {
 
             {/* Dynamic N x N Grid of coalescing cells */}
             <div className="mx-auto my-2 p-2 rounded-lg bg-black/60 border border-white/10 w-48 h-48 flex items-center justify-center">
-              <div
-                className="grid gap-[1px] w-full h-full"
-                style={{ gridTemplateColumns: `repeat(${rasterGrid.length}, minmax(0, 1fr))` }}
-              >
-                {rasterGrid.map((row, rIdx) =>
-                  row.map((val, cIdx) => {
-                    const intensity = Math.round(val * 255);
-                    const hex = intensity.toString(16).padStart(2, '0');
-                    const bg = `#${hex}${hex}${hex}`;
-                    return (
-                      <div
-                        key={`raster-${rIdx}-${cIdx}`}
-                        className="rounded-[1px]"
-                        style={{ backgroundColor: bg }}
-                      />
-                    );
-                  })
-                )}
-              </div>
+              {rasterGrid.length > 32 ? (
+                <canvas
+                  ref={rasterCanvasRef}
+                  className="w-full h-full rounded"
+                  style={{ imageRendering: 'pixelated' }}
+                />
+              ) : (
+                <div
+                  className="grid gap-[1px] w-full h-full"
+                  style={{ gridTemplateColumns: `repeat(${rasterGrid.length}, minmax(0, 1fr))` }}
+                >
+                  {rasterGrid.map((row, rIdx) =>
+                    row.map((val, cIdx) => {
+                      const intensity = Math.round(val * 255);
+                      const hex = intensity.toString(16).padStart(2, '0');
+                      const bg = `#${hex}${hex}${hex}`;
+                      return (
+                        <div
+                          key={`raster-${rIdx}-${cIdx}`}
+                          className="rounded-[1px]"
+                          style={{ backgroundColor: bg }}
+                        />
+                      );
+                    })
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

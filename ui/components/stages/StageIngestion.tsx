@@ -211,7 +211,9 @@ export const StageIngestion: React.FC = () => {
   const [customPreviewUrl, setCustomPreviewUrl] = useState<string | null>(null);
   const [customFileName, setCustomFileName] = useState<string | null>(initial.custom_image_name || null);
   const [customDimensions, setCustomDimensions] = useState<{ w: number; h: number } | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const previewCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Build high-res source buffer from uploaded image or selected preset
   const activeSourceBuffer = useMemo(() => {
@@ -328,9 +330,30 @@ export const StageIngestion: React.FC = () => {
   const neqrQubits = 2 * n + bitDepth;
   const isSubCritical = noiseRate < P_CRIT;
 
-  // Render up to 16x16 in the interactive cell grid, or full 32x32 compact cells
+  // Render up to 32x32 in the interactive cell grid, or crisp HTML5 canvas for 64x64 / 128x128
   const displayMatrix = processedMatrix;
   const displayRes = displayMatrix.length;
+
+  useEffect(() => {
+    if (displayRes <= 32 || !previewCanvasRef.current) return;
+    const canvas = previewCanvasRef.current;
+    canvas.width = displayRes;
+    canvas.height = displayRes;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const imgData = ctx.createImageData(displayRes, displayRes);
+    for (let r = 0; r < displayRes; r++) {
+      for (let c = 0; c < displayRes; c++) {
+        const byteVal = Math.round((displayMatrix[r]?.[c] ?? 0) * 255);
+        const idx = (r * displayRes + c) * 4;
+        imgData.data[idx] = byteVal;
+        imgData.data[idx + 1] = byteVal;
+        imgData.data[idx + 2] = byteVal;
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }, [displayMatrix, displayRes]);
 
   return (
     <div className="space-y-6">
@@ -480,13 +503,13 @@ export const StageIngestion: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-white/10">
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1.5">Register Resolution (N × N)</label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {[4, 8, 16, 32].map((res) => (
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+                {[4, 8, 16, 32, 64, 128].map((res) => (
                   <button
                     key={res}
                     type="button"
                     onClick={() => setResolution(res)}
-                    className={`py-1.5 px-2 rounded-lg text-xs font-mono font-medium transition-all border ${
+                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-medium transition-all border ${
                       resolution === res
                         ? 'bg-[#00f5ff]/20 text-[#00f5ff] border-[#00f5ff] shadow-[0_0_10px_rgba(0,245,255,0.2)]'
                         : 'bg-white/5 text-slate-400 border-white/10 hover:border-white/25 hover:text-white'
@@ -711,38 +734,62 @@ export const StageIngestion: React.FC = () => {
           </div>
 
           <div className="relative p-3 rounded-xl bg-[#090a0f] border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.5)] my-2">
-            <motion.div
-              key={`${pattern}-${resolution}-${interpolation}-${bitDepth}-${gamma}-${contrastStretch}-${customFileName}`}
-              initial={{ opacity: 0.7, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.2 }}
-              className="grid gap-[1.5px]"
-              style={{
-                gridTemplateColumns: `repeat(${displayRes}, minmax(0, 1fr))`,
-                width: '320px',
-                height: '320px',
-              }}
-            >
-              {displayMatrix.map((row, rIdx) =>
-                row.map((val, cIdx) => {
-                  const byteVal = Math.round(val * 255);
-                  return (
-                    <div
-                      key={`${rIdx}-${cIdx}`}
-                      className="relative group rounded-[1px]"
-                      style={{
-                        backgroundColor: `rgb(${byteVal}, ${byteVal}, ${byteVal})`,
-                      }}
-                      title={`(${rIdx}, ${cIdx}) → g=${val.toFixed(3)} | level=${Math.round(
-                        val * ((1 << bitDepth) - 1)
-                      )}/${(1 << bitDepth) - 1}`}
-                    >
-                      <div className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-[#00f5ff]/40 pointer-events-none" />
-                    </div>
-                  );
-                })
-              )}
-            </motion.div>
+            {displayRes <= 32 ? (
+              <motion.div
+                key={`${pattern}-${resolution}-${interpolation}-${bitDepth}-${gamma}-${contrastStretch}-${customFileName}`}
+                initial={{ opacity: 0.7, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
+                className="grid gap-[1.5px]"
+                style={{
+                  gridTemplateColumns: `repeat(${displayRes}, minmax(0, 1fr))`,
+                  width: '320px',
+                  height: '320px',
+                }}
+              >
+                {displayMatrix.map((row, rIdx) =>
+                  row.map((val, cIdx) => {
+                    const byteVal = Math.round(val * 255);
+                    return (
+                      <div
+                        key={`${rIdx}-${cIdx}`}
+                        className="relative group rounded-[1px]"
+                        style={{
+                          backgroundColor: `rgb(${byteVal}, ${byteVal}, ${byteVal})`,
+                        }}
+                        title={`(${rIdx}, ${cIdx}) → g=${val.toFixed(3)} | level=${Math.round(
+                          val * ((1 << bitDepth) - 1)
+                        )}/${(1 << bitDepth) - 1}`}
+                      >
+                        <div className="opacity-0 group-hover:opacity-100 absolute inset-0 bg-[#00f5ff]/40 pointer-events-none" />
+                      </div>
+                    );
+                  })
+                )}
+              </motion.div>
+            ) : (
+              <div className="relative" style={{ width: '320px', height: '320px' }}>
+                <canvas
+                  ref={previewCanvasRef}
+                  onMouseMove={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const cIdx = Math.min(displayRes - 1, Math.max(0, Math.floor(((e.clientX - rect.left) / rect.width) * displayRes)));
+                    const rIdx = Math.min(displayRes - 1, Math.max(0, Math.floor(((e.clientY - rect.top) / rect.height) * displayRes)));
+                    const val = displayMatrix[rIdx]?.[cIdx] ?? 0;
+                    const maxLvl = (1 << bitDepth) - 1;
+                    setHoverInfo(`(${rIdx}, ${cIdx}) → g=${val.toFixed(3)} | level=${Math.round(val * maxLvl)}/${maxLvl}`);
+                  }}
+                  onMouseLeave={() => setHoverInfo(null)}
+                  className="w-full h-full rounded cursor-crosshair"
+                  style={{ imageRendering: 'pixelated' }}
+                />
+                {hoverInfo && (
+                  <div className="absolute bottom-2 left-2 right-2 px-2.5 py-1 rounded bg-[#090a0f]/90 border border-[#00f5ff]/40 text-[11px] font-mono text-[#00f5ff] text-center pointer-events-none">
+                    {hoverInfo}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Bottom Summary Bar */}

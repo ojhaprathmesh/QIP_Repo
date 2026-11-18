@@ -5,6 +5,40 @@ import { motion } from 'framer-motion';
 import { useQuantumStore } from '@/lib/quantumStore';
 import { MetricCard } from '@/components/shared/MetricCard';
 
+const HighResMatrixCanvas: React.FC<{ pixels: number[][]; sizePx?: number }> = ({ pixels, sizePx = 224 }) => {
+  const ref = React.useRef<HTMLCanvasElement | null>(null);
+  React.useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas || !pixels.length) return;
+    const h = pixels.length;
+    const w = pixels[0]?.length || h;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const imgData = ctx.createImageData(w, h);
+    for (let r = 0; r < h; r++) {
+      for (let c = 0; c < w; c++) {
+        const byteVal = Math.round((pixels[r]?.[c] ?? 0) * 255);
+        const idx = (r * w + c) * 4;
+        imgData.data[idx] = byteVal;
+        imgData.data[idx + 1] = byteVal;
+        imgData.data[idx + 2] = byteVal;
+        imgData.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(imgData, 0, 0);
+  }, [pixels]);
+
+  return (
+    <canvas
+      ref={ref}
+      className="rounded"
+      style={{ width: `${sizePx}px`, height: `${sizePx}px`, imageRendering: 'pixelated' }}
+    />
+  );
+};
+
 export const StageDenoiseArena: React.FC = () => {
   const frameResult = useQuantumStore((state) => state.frameResult);
   const config = useQuantumStore((state) => state.config);
@@ -66,29 +100,33 @@ export const StageDenoiseArena: React.FC = () => {
         className="p-2 rounded-lg bg-[#090a0f] border shadow-[0_0_20px_rgba(0,0,0,0.6)]"
         style={{ borderColor }}
       >
-        <div
-          className="grid gap-[1px]"
-          style={{
-            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            width: '224px',
-            height: '224px',
-          }}
-        >
-          {pixels.map((row, rIdx) =>
-            row.map((val, cIdx) => (
-              <div
-                key={`${rIdx}-${cIdx}`}
-                className="rounded-[1px] transition-colors"
-                style={{
-                  backgroundColor: `rgb(${Math.round(val * 255)}, ${Math.round(val * 255)}, ${Math.round(
-                    val * 255
-                  )})`,
-                }}
-                title={`(${rIdx}, ${cIdx}): ${val.toFixed(2)}`}
-              />
-            ))
-          )}
-        </div>
+        {rows > 32 ? (
+          <HighResMatrixCanvas pixels={pixels} sizePx={224} />
+        ) : (
+          <div
+            className="grid gap-[1px]"
+            style={{
+              gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
+              width: '224px',
+              height: '224px',
+            }}
+          >
+            {pixels.map((row, rIdx) =>
+              row.map((val, cIdx) => (
+                <div
+                  key={`${rIdx}-${cIdx}`}
+                  className="rounded-[1px] transition-colors"
+                  style={{
+                    backgroundColor: `rgb(${Math.round(val * 255)}, ${Math.round(val * 255)}, ${Math.round(
+                      val * 255
+                    )})`,
+                  }}
+                  title={`(${rIdx}, ${cIdx}): ${val.toFixed(2)}`}
+                />
+              ))
+            )}
+          </div>
+        )}
       </div>
     );
   };
