@@ -3,7 +3,18 @@ import { PipelineState, QuantumEvent } from './types';
 
 export const useQuantumStore = create<PipelineState>((set) => ({
   activeStage: 1,
-  config: { resolution: 8, pattern: 'checkerboard', noise_rate: 0.01 },
+  config: {
+    resolution: 16,
+    pattern: 'cameraman',
+    encoding: 'neqr',
+    noise_rate: 0.003,
+    bit_depth: 8,
+    interpolation: 'area',
+    gamma: 1.0,
+    contrast_stretch: true,
+    custom_pixels: null,
+    custom_image_name: null,
+  },
   setConfig: (config) => set((state) => ({ config: { ...state.config, ...config } })),
   circuitInfo: null,
   statevector: null,

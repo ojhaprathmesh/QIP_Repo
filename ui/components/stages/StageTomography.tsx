@@ -7,6 +7,8 @@ import MetricCard from '@/components/shared/MetricCard';
 
 export const StageTomography: React.FC = () => {
   const shotsProgress = useQuantumStore((state) => state.shotsProgress);
+  const frameResult = useQuantumStore((state) => state.frameResult);
+  const customPixels = useQuantumStore((state) => state.config.custom_pixels);
 
   const shotsCompleted = shotsProgress?.shots_completed ?? 0;
   const totalShots = shotsProgress?.total_shots || 10000;
@@ -25,27 +27,25 @@ export const StageTomography: React.FC = () => {
     return Math.max(...sortedBitstrings.map(([, count]) => count), 1);
   }, [sortedBitstrings]);
 
-  // Progressive raster grid (4x4 cells): random noise initially that coalesces as shots come in
+  // Progressive raster grid: random shot noise initially that coalesces into the reconstructed image
   const rasterGrid = useMemo(() => {
-    const size = 4;
+    const base = frameResult?.pixels || customPixels;
+    const size = base && base.length > 0 ? base.length : 8;
     const grid: number[][] = [];
     const progressFactor = shotsCompleted / Math.max(1, totalShots);
 
     for (let r = 0; r < size; r++) {
       const row: number[] = [];
       for (let c = 0; c < size; c++) {
-        // Target pattern: checkerboard (0 or 1)
-        const target = (r + c) % 2 === 0 ? 0.9 : 0.1;
-        // Pseudo-random noise seeded by position
-        const noise = Math.sin(r * 12.9898 + c * 78.233) * 0.5 + 0.5;
-        // Blend between noise and target pattern as shots progress
+        const target = base?.[r]?.[c] ?? ((r + c) % 2 === 0 ? 0.9 : 0.1);
+        const noise = Math.sin(r * 12.9898 + c * 78.233 + shotsCompleted * 0.01) * 0.5 + 0.5;
         const coalesced = noise * (1 - progressFactor) + target * progressFactor;
-        row.push(coalesced);
+        row.push(Math.min(1, Math.max(0, coalesced)));
       }
       grid.push(row);
     }
     return grid;
-  }, [shotsCompleted, totalShots]);
+  }, [shotsCompleted, totalShots, frameResult, customPixels]);
 
   return (
     <div className="space-y-6">
@@ -153,21 +153,22 @@ export const StageTomography: React.FC = () => {
               Progressive Raster Reconstruction
             </span>
 
-            {/* 4x4 Grid of coalescing cells */}
-            <div className="mx-auto my-2 p-2 rounded-lg bg-black/60 border border-white/10 w-44 h-44 flex items-center justify-center">
-              <div className="grid grid-cols-4 gap-1.5 w-full h-full">
+            {/* Dynamic N x N Grid of coalescing cells */}
+            <div className="mx-auto my-2 p-2 rounded-lg bg-black/60 border border-white/10 w-48 h-48 flex items-center justify-center">
+              <div
+                className="grid gap-[1px] w-full h-full"
+                style={{ gridTemplateColumns: `repeat(${rasterGrid.length}, minmax(0, 1fr))` }}
+              >
                 {rasterGrid.map((row, rIdx) =>
                   row.map((val, cIdx) => {
                     const intensity = Math.round(val * 255);
                     const hex = intensity.toString(16).padStart(2, '0');
                     const bg = `#${hex}${hex}${hex}`;
                     return (
-                      <motion.div
+                      <div
                         key={`raster-${rIdx}-${cIdx}`}
-                        className="rounded-sm border border-white/5"
+                        className="rounded-[1px]"
                         style={{ backgroundColor: bg }}
-                        animate={{ backgroundColor: bg }}
-                        transition={{ duration: 0.2 }}
                       />
                     );
                   })

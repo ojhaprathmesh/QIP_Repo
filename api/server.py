@@ -107,20 +107,77 @@ async def websocket_simulate(websocket: WebSocket):
         print("Client disconnected")
 
 
-def _base_image(resolution: int, pattern: str) -> List[List[float]]:
-    """Deterministic clean test image in [0, 1]."""
+def _base_image(
+    resolution: int,
+    pattern: str,
+    custom_pixels: Any = None,
+) -> List[List[float]]:
+    """Deterministic clean reference image in [0, 1], supporting real-world uploads & benchmarks."""
     n = max(2, min(resolution, MAX_GRID))
+    if (
+        isinstance(custom_pixels, list)
+        and len(custom_pixels) > 0
+        and isinstance(custom_pixels[0], list)
+    ):
+        src_h = len(custom_pixels)
+        src_w = len(custom_pixels[0])
+        rows = []
+        for y in range(n):
+            sy = min(src_h - 1, int(y * src_h / n))
+            row = []
+            for x in range(n):
+                sx = min(src_w - 1, int(x * src_w / n))
+                row.append(float(min(1.0, max(0.0, custom_pixels[sy][sx]))))
+            rows.append(row)
+        return rows
+
     rows = []
     for y in range(n):
+        ny = y / max(1, n - 1)
         row = []
         for x in range(n):
+            nx = x / max(1, n - 1)
             if pattern == "gradient":
-                v = (x + y) / (2 * (n - 1))
+                v = (nx + ny) / 2.0
+            elif pattern == "cameraman":
+                # Sky & horizon + cameraman silhouette, head, camera & tripod
+                sky = 0.78 - 0.18 * ny + 0.04 * math.sin(nx * 6.0)
+                ground = 0.36 + 0.08 * math.cos(nx * 10.0)
+                v = sky if ny < 0.68 else ground
+                # Head & torso silhouette
+                if (nx - 0.34) ** 2 / 0.008 + (ny - 0.28) ** 2 / 0.012 < 1.0:
+                    v = 0.14
+                if 0.22 <= nx <= 0.45 and 0.36 <= ny <= 0.88:
+                    v = 0.10 + 0.05 * math.sin(nx * 24.0)
+                # Camera box & lens
+                if 0.48 <= nx <= 0.62 and 0.34 <= ny <= 0.46:
+                    v = 0.22 if nx < 0.58 else 0.90
+                # Tripod legs
+                if ny >= 0.46 and (
+                    abs(nx - (0.53 - 0.18 * (ny - 0.46))) < 0.028
+                    or abs(nx - (0.55 + 0.22 * (ny - 0.46))) < 0.028
+                ):
+                    v = 0.18
+            elif pattern == "lunar":
+                # Lunar surface topography with multi-scale craters & shadow rims
+                base = 0.52 + 0.12 * math.sin(nx * 5.0 + ny * 3.0)
+                for cx, cy, rad in ((0.32, 0.35, 0.20), (0.70, 0.62, 0.24), (0.65, 0.25, 0.12)):
+                    dx, dy = nx - cx, ny - cy
+                    d = math.sqrt(dx * dx + dy * dy)
+                    if d < rad:
+                        base = 0.26 + 0.28 * (d / rad) + 0.16 * (dx / rad)
+                    elif d < rad * 1.22:
+                        base = min(0.95, base + 0.24 * (1.0 - (d - rad) / (rad * 0.22)))
+                v = min(1.0, max(0.05, base))
             elif pattern == "shepp_logan":
                 cx, cy = (x - n / 2) / (n / 2), (y - n / 2) / (n / 2)
                 v = 0.85 if cx * cx / 0.8 + cy * cy / 0.95 < 1 else 0.05
-                if (cx - 0.1) ** 2 + (cy + 0.2) ** 2 < 0.08:
-                    v = 0.4
+                if cx * cx / 0.66 + cy * cy / 0.82 < 1:
+                    v = 0.32
+                if (cx - 0.18) ** 2 / 0.06 + (cy + 0.1) ** 2 / 0.14 < 1:
+                    v = 0.68
+                if (cx + 0.18) ** 2 / 0.06 + (cy + 0.1) ** 2 / 0.14 < 1:
+                    v = 0.58
             else:  # checkerboard
                 v = 1.0 if (x + y) % 2 == 0 else 0.0
             row.append(v)
@@ -142,7 +199,8 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
     rng = random.Random(42)
     n = max(2, min(request.resolution, MAX_GRID))
     n_addr = max(1, int(math.log2(n)))
-    qubits = 2 * n_addr + (1 if request.encoding == "frqi" else 8)
+    q_bits = 4 if getattr(request, "bit_depth", 8) == 4 else 8
+    qubits = 2 * n_addr + (1 if request.encoding == "frqi" else q_bits)
 
     async def start(stage_id: int, name: str) -> None:
         await bus.publish("STAGE_STARTED", STAGE_STARTED(
@@ -194,20 +252,23 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
     # Stage 4 (Tab 4: Denoising Arena): Progressive Wavelet / Spatial Filtering
     # -----------------------------------------------------------------------
     await start(4, "Quantum vs. Classical Denoising Arena")
-    clean = _base_image(request.resolution, request.pattern)
+    clean = _base_image(request.resolution, request.pattern, getattr(request, "custom_pixels", None))
     noise = [[rng.uniform(-1, 1) for _ in range(n)] for _ in range(n)]
-    amp = min(0.65, max(0.12, request.noise_rate * 18))
+    amp = min(0.65, max(0.10, request.noise_rate * 18))
+    final_purity = max(0.18, 1.0 - min(0.82, request.noise_rate * 12.0))
     for i in range(1, FRAME_TICKS + 1):
         progress = i / FRAME_TICKS
         residual = amp * ((1.0 - progress) ** 1.35) + amp * 0.08
         frame = [[min(1.0, max(0.0, clean[y][x] + noise[y][x] * residual))
                   for x in range(n)] for y in range(n)]
         psnr, ssim, mse = _quality(clean, frame)
+        fidelity = min(0.9995, max(0.42, (1.0 - 1.4 * mse) * (0.72 + 0.28 * final_purity)))
         await bus.publish("FRAME_RECONSTRUCTED", FRAME_RECONSTRUCTED(
             pixels=frame,
             psnr=round(psnr, 2),
             ssim=round(ssim, 4),
             mse=round(mse, 5),
+            fidelity=round(fidelity, 4),
         ).model_dump())
         await pace(FRAME_TICK_TIME)
     await pace(STAGE_SAVOR_PAUSE)

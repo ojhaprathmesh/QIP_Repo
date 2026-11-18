@@ -7,6 +7,10 @@ export interface SimulationRequest {
   shots: number;
   denoise_method: string;
   threshold: number;
+  bit_depth?: number;
+  interpolation?: string;
+  gamma?: number;
+  custom_pixels?: number[][] | null;
 }
 
 export interface StageStartedEvent {
@@ -43,6 +47,7 @@ export interface FrameReconstructedEvent {
   psnr: number;
   ssim: number;
   mse: number;
+  fidelity?: number;
 }
 
 export interface PhaseCritFoundEvent {
@@ -62,7 +67,14 @@ export type QuantumEvent =
 export interface IngestionConfig {
   resolution: number;
   pattern: string;
+  encoding: 'frqi' | 'neqr';
   noise_rate: number;
+  bit_depth: 4 | 8;
+  interpolation: 'area' | 'bilinear' | 'nearest';
+  gamma: number;
+  contrast_stretch: boolean;
+  custom_pixels: number[][] | null;
+  custom_image_name: string | null;
 }
 
 export interface PipelineState {

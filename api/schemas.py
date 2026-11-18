@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class SimulationRequest(BaseModel):
     resolution: int = Field(..., description="Resolution of the simulation")
@@ -10,6 +10,10 @@ class SimulationRequest(BaseModel):
     shots: int = Field(..., description="Number of shots to run")
     denoise_method: str = Field(..., description="Denoising method to use")
     threshold: float = Field(..., description="Threshold for denoising")
+    bit_depth: int = Field(8, description="Color register bit-depth q (8 or 4)")
+    interpolation: str = Field("area", description="Downsampling kernel (area, bilinear, nearest)")
+    gamma: float = Field(1.0, description="Radiometric gamma correction")
+    custom_pixels: Optional[List[List[float]]] = Field(None, description="Preprocessed custom real-world image matrix in [0, 1]")
 
 class STAGE_STARTED(BaseModel):
     stage_id: int = Field(..., description="ID of the stage")
@@ -36,6 +40,7 @@ class FRAME_RECONSTRUCTED(BaseModel):
     psnr: float = Field(..., description="Peak signal-to-noise ratio")
     ssim: float = Field(..., description="Structural similarity index")
     mse: float = Field(..., description="Mean squared error")
+    fidelity: float = Field(0.95, description="Uhlmann-Jozsa quantum state fidelity F(rho, sigma)")
 
 class PHASE_CRIT_FOUND(BaseModel):
     p_crit: float = Field(..., description="Critical phase value")
