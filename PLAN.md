@@ -812,11 +812,11 @@ The research project and engineering codebase are tracked against explicit, phas
 
 ### Phase 3A — Real-Time Simulation Streaming Bridge (FastAPI & WebSockets)
 
-- [ ] Asynchronous FastAPI server (`api/server.py`) operational with `/ws/simulate` and `/api/health`.
-- [ ] In-process non-blocking event dispatcher (`api/event_bus.py`) publishing typed JSON events to WebSocket subscribers.
-- [ ] Pydantic v2 schemas (`api/schemas.py`) validating client simulation parameters and outgoing telemetry payloads.
-- [ ] Telemetry events typed: `STAGE_STARTED`, `CIRCUIT_COMPILED`, `STATEVECTOR_UPDATED`, `SHOTS_ACCUMULATED`, `FRAME_RECONSTRUCTED`, `PHASE_CRIT_FOUND`.
-- [ ] WebSocket handshake and event-loop integration tests passing.
+- [x] Asynchronous FastAPI server (`api/server.py`) operational with `/ws/simulate` and `/api/health`.
+- [x] In-process non-blocking event dispatcher (`api/event_bus.py`) publishing typed JSON events to WebSocket subscribers.
+- [x] Pydantic v2 schemas (`api/schemas.py`) validating client simulation parameters and outgoing telemetry payloads.
+- [x] Telemetry events typed: `STAGE_STARTED`, `CIRCUIT_COMPILED`, `STATEVECTOR_UPDATED`, `SHOTS_ACCUMULATED`, `FRAME_RECONSTRUCTED`, `PHASE_CRIT_FOUND`.
+- [x] WebSocket handshake and event-loop integration tests passing (`tests/test_api.py`).
 
 ### Phase 3B — Modular Real-Time Next.js 15 Visual Studio
 
