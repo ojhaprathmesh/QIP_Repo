@@ -6,10 +6,11 @@ import { useQuantumStore } from '@/lib/quantumStore';
 
 export const StageNoiseChamber: React.FC = () => {
   const statevector = useQuantumStore((state) => state.statevector);
+  const configuredNoiseRate = useQuantumStore((state) => state.config.noise_rate);
 
-  // Noise parameters (read-only NISQ chamber parameters)
+  // Noise parameters reflecting the user's configured NISQ chamber rate p
   const noiseChannel = 'Depolarizing Quantum Channel';
-  const noiseRate = 0.015; // Standard NISQ chamber rate p
+  const noiseRate = configuredNoiseRate ?? 0.015;
   const purity = statevector ? statevector.purity : 1.0;
 
   // Determine noise severity badge color
