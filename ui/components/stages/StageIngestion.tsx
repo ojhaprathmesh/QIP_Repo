@@ -500,16 +500,16 @@ export const StageIngestion: React.FC = () => {
           </div>
 
           {/* 2. Resolution & Encoding Scheme */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-3 border-t border-white/10">
+          <div className="space-y-3 pt-3 border-t border-white/10">
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1.5">Register Resolution (N × N)</label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                 {[4, 8, 16, 32, 64, 128].map((res) => (
                   <button
                     key={res}
                     type="button"
                     onClick={() => setResolution(res)}
-                    className={`py-1.5 px-1.5 rounded-lg text-[11px] font-mono font-medium transition-all border ${
+                    className={`py-2 px-2 rounded-lg text-xs font-mono font-semibold text-center whitespace-nowrap transition-all border ${
                       resolution === res
                         ? 'bg-[#00f5ff]/20 text-[#00f5ff] border-[#00f5ff] shadow-[0_0_10px_rgba(0,245,255,0.2)]'
                         : 'bg-white/5 text-slate-400 border-white/10 hover:border-white/25 hover:text-white'
@@ -523,21 +523,21 @@ export const StageIngestion: React.FC = () => {
 
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1.5">Quantum State Encoding</label>
-              <div className="grid grid-cols-2 gap-1.5">
+              <div className="grid grid-cols-2 gap-2">
                 {(
                   [
-                    { id: 'frqi', label: 'FRQI (2n+1)', desc: 'Amplitude' },
-                    { id: 'neqr', label: `NEQR (2n+${bitDepth})`, desc: 'Basis State' },
+                    { id: 'frqi', label: `FRQI (2n+1 = ${frqiQubits} Qubits)`, desc: 'Continuous Amplitude Rotation' },
+                    { id: 'neqr', label: `NEQR (2n+${bitDepth} = ${neqrQubits} Qubits)`, desc: 'Computational Basis Bitstring' },
                   ] as const
                 ).map((enc) => (
                   <button
                     key={enc.id}
                     type="button"
                     onClick={() => setEncoding(enc.id)}
-                    className={`py-1.5 px-2.5 rounded-lg text-xs font-mono font-medium transition-all border ${
+                    className={`py-2 px-3 rounded-lg text-xs font-mono font-medium transition-all border text-center ${
                       encoding === enc.id
-                        ? 'bg-[#00f5ff]/20 text-[#00f5ff] border-[#00f5ff]'
-                        : 'bg-white/5 text-slate-400 border-white/10 hover:text-white'
+                        ? 'bg-[#00f5ff]/20 text-[#00f5ff] border-[#00f5ff] shadow-[0_0_10px_rgba(0,245,255,0.15)]'
+                        : 'bg-white/5 text-slate-400 border-white/10 hover:border-white/25 hover:text-white'
                     }`}
                   >
                     {enc.label}
