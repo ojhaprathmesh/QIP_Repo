@@ -59,8 +59,16 @@ export type QuantumEvent =
   | FrameReconstructedEvent
   | PhaseCritFoundEvent;
 
+export interface IngestionConfig {
+  resolution: number;
+  pattern: string;
+  noise_rate: number;
+}
+
 export interface PipelineState {
   activeStage: number;
+  config: IngestionConfig;
+  setConfig: (config: Partial<IngestionConfig>) => void;
   circuitInfo: CircuitCompiledEvent | null;
   statevector: StatevectorUpdatedEvent | null;
   shotsProgress: ShotsAccumulatedEvent | null;

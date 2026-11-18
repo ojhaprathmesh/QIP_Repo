@@ -12,10 +12,9 @@ class EventBus:
         self._subscribers[event_type].append(callback)
 
     async def publish(self, event_type: str, event_data: Dict[str, Any]) -> None:
-        """Publish an event to all subscribers."""
-        if event_type in self._subscribers:
-            for callback in self._subscribers[event_type]:
-                asyncio.create_task(callback(event_data))
+        """Publish an event to all subscribers, delivering in order."""
+        for callback in list(self._subscribers.get(event_type, [])):
+            await callback(event_data)
 
     async def unsubscribe(self, event_type: str, callback: Callable[[Dict[str, Any]], Awaitable[None]]) -> None:
         """Unsubscribe from an event type."""

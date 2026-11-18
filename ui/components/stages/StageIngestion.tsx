@@ -1,13 +1,27 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useQuantumStore } from '@/lib/quantumStore';
 
 export const StageIngestion: React.FC = () => {
-  const [resolution, setResolution] = useState<number>(8);
-  const [pattern, setPattern] = useState<'checkerboard' | 'gradient' | 'shepp_logan'>('checkerboard');
-  const [noiseEnabled, setNoiseEnabled] = useState<boolean>(false);
-  const [noiseSigma, setNoiseSigma] = useState<number>(0.08);
+  const initial = useQuantumStore.getState().config;
+  const setConfig = useQuantumStore((s) => s.setConfig);
+  const [resolution, setResolution] = useState<number>(initial.resolution);
+  const [pattern, setPattern] = useState<'checkerboard' | 'gradient' | 'shepp_logan'>(
+    initial.pattern as 'checkerboard' | 'gradient' | 'shepp_logan'
+  );
+  const [noiseEnabled, setNoiseEnabled] = useState<boolean>(initial.noise_rate > 0.005);
+  const [noiseSigma, setNoiseSigma] = useState<number>(Math.max(0.08, initial.noise_rate * 4));
+
+  // Publish the user's ingestion choices so "Run Simulation" uses them.
+  useEffect(() => {
+    setConfig({
+      resolution,
+      pattern,
+      noise_rate: noiseEnabled ? noiseSigma / 4 : 0.001,
+    });
+  }, [resolution, pattern, noiseEnabled, noiseSigma, setConfig]);
 
   // Resolution n calculation: N = 2^n -> n = log2(resolution)
   const n = useMemo(() => Math.round(Math.log2(resolution)), [resolution]);

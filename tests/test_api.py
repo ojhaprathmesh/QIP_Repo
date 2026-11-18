@@ -1,8 +1,12 @@
 import pytest
 from fastapi.testclient import TestClient
+import api.server as server
 from api.server import app
 from api.schemas import SimulationRequest
 import json
+
+# Disable demo pacing delays so the suite stays fast.
+server.PACING_SCALE = 0.0
 
 client = TestClient(app)
 

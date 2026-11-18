@@ -30,7 +30,8 @@ export default function QuantumStudioDashboard() {
   const { isConnected, error, send } = useQuantumStream();
 
   const handleRunSimulation = () => {
-    send(DEFAULT_SIMULATION_REQUEST);
+    const { config } = useQuantumStore.getState();
+    send({ ...DEFAULT_SIMULATION_REQUEST, ...config });
   };
 
   const renderActiveStage = () => {
