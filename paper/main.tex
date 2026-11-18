@@ -281,7 +281,7 @@ The quantum circuit executes three sequential operations:
     \node[stepnode, below=1.0cm of s5b] (s6b) {6b. Classical Filter Suite\\BM3D / Bilateral / Median};
 
     % Row 5: Benchmark Analysis Reconvergence
-    \node[stepnode, minimum width=7.4cm, below=3.6cm of s4] (s7) {7. Benchmark Analysis Engine\\PSNR, SSIM, Fidelity $\mathcal{F}$, $p_{\text{crit}}$ Horizon};
+    \node[stepnode, minimum width=7.4cm, below=1.1cm of $(s6a.south)!0.5!(s6b.south)$] (s7) {7. Benchmark Analysis Engine\\PSNR, SSIM, Fidelity $\mathcal{F}$, $p_{\text{crit}}$ Horizon};
 
     % Connections
     \draw[arrow] (s1) -- (s2);
@@ -303,7 +303,7 @@ Fig. 2 details the algorithmic execution workflow across the framework. As shown
 
 Algorithm 1 provides the end-to-end pseudocode for the comparative evaluation procedure.
 
-\begin{algorithm}[H]
+\begin{algorithm}[htbp]
 \caption{Comparative Quantum vs. Classical Image Denoising Evaluation}
 \label{alg:framework}
 \KwIn{Clean Image $I \in \mathbb{R}^{2^n \times 2^n}$, representation type $T \in \{\text{FRQI}, \text{NEQR}\}$, noise parameters $\mathbf{\Theta} = \{p, T_1, T_2, \mathbf{\Lambda}\}$, shot budget $N_{\text{shots}}$}
@@ -335,7 +335,6 @@ Apply classical filter suite $\hat{I}_{\text{C}} \gets \text{BM3D}(\hat{I}_{\tex
 Compute metrics: $\text{PSNR}(I, \hat{I}_{\text{Q}})$, $\text{PSNR}(I, \hat{I}_{\text{C}})$, $\text{SSIM}(I, \hat{I}_{\text{Q}})$, $\text{SSIM}(I, \hat{I}_{\text{C}})$, and fidelity $\mathcal{F}$\;
 \Return{$\hat{I}_{\text{Q}}, \hat{I}_{\text{C}}, \mathbf{M}$}
 \end{algorithm}
-\FloatBarrier
 
 \subsection{Theoretical Analysis: The NEQR Bit-Significance Variance Theorem}
 A central theoretical result established in this paper concerns how physical bit-flip errors translate into radiometric distortion in NEQR states. In classical transmission, bit error rates assume symmetric corruption across channels. In NEQR, however, physical noise acts uniformly on all color register qubits, creating an exponential disparity in reconstructed pixel error. We formalize and prove this result in Theorem 1:
