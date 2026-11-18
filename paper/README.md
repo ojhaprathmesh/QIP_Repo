@@ -7,10 +7,12 @@ This directory contains the complete, publication-ready research paper conformin
   - 1-inch margins, Times 12 pt, justified text with continuous sections (no `\raggedright`, no artificial page breaks).
   - All 8 required sections structured strictly according to the word count guidance (~4,987 total prose words).
   - Mathematical proof of the **NEQR Bit-Significance Variance Theorem**.
-  - Embedded vector diagrams using TikZ:
-    - **Fig. 1**: End-to-end System Architecture.
-    - **Fig. 2**: Algorithmic Execution Workflow.
-    - **Fig. 3**: Reconstruction PSNR scaling curves showing the empirical critical threshold $p_{\text{crit}} \approx 0.008$.
+  - Embedded vector diagrams using TikZ and publication figures:
+    - **Fig. 1**: End-to-end System Architecture (TikZ vector diagram).
+    - **Fig. 2**: Algorithmic Execution Workflow (TikZ vector diagram).
+    - **Fig. 3**: Reconstruction PSNR scaling curves showing the empirical critical threshold $p_{\text{crit}} \approx 0.008$ (TikZ vector diagram).
+    - **Fig. 4**: Qualitative Visual Image Reconstruction Matrix (`figures/fig4_visual_comparison.pdf`) across Ground-Truth Clean, Noisy FRQI, Noisy NEQR, QHWT Denoised, Classical Median, and BM3D on the standard USC-SIPI Cameraman dataset.
+    - **Fig. 5**: Empirical Validation of the NEQR Bit-Significance Variance Theorem (`figures/fig5_bitflip_sensitivity.pdf`) validating the theoretical $(4^q-1)/3$ trajectory with $R^2 = 0.9972$.
   - Structured tables:
     - **Table I**: Comprehensive literature comparison table.
     - **Table II**: Notation and symbol table.
