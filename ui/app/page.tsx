@@ -65,9 +65,6 @@ export default function QuantumStudioDashboard() {
             <div>
               <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
                 QIP Quantum Studio
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#00f5ff]/10 text-[#00f5ff] border border-[#00f5ff]/30 font-medium">
-                  Phase 3B
-                </span>
               </h1>
               <p className="text-xs text-slate-400">
                 Quantum Image Processing & Reconstruction Pipeline

@@ -163,7 +163,7 @@ export const StageNoiseChamber: React.FC = () => {
 
               <div className="relative z-10 space-y-1">
                 <div className="text-sm font-bold text-white tracking-wide">3D Bloch Sphere</div>
-                <div className="text-[11px] font-mono text-[#00f5ff]">(Three.js — Phase 3B Extension)</div>
+                <div className="text-[11px] font-mono text-[#00f5ff]">(Three.js Bloch Sphere)</div>
               </div>
             </div>
           </div>
