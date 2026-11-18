@@ -2,8 +2,15 @@
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage{times,graphicx,amsmath,amssymb,booktabs,cite,url}
 \usepackage[ruled,linesnumbered]{algorithm2e}
+\usepackage{placeins}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric,fit,calc}
+
+% Permissive float placement parameters to prevent float deferral
+\renewcommand{\topfraction}{0.95}
+\renewcommand{\bottomfraction}{0.85}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.8}
 
 \begin{document}
 
@@ -72,10 +79,11 @@ The physics of open quantum systems provides the rigorous mathematical apparatus
 
 Techniques such as Zero-Noise Extrapolation (ZNE) and probabilistic error cancellation (PEC) have been developed to mitigate noise in expectation value estimation for variational quantum eigensolvers (VQE) \cite{temme2017error, li2017efficient, cerezo2021variational}. However, visual computing requires reconstructed multidimensional state distributions rather than single scalar Hamiltonian expectation values. The impact of non-unitary noise maps on spatial visual correlation remains unaddressed in mainstream quantum information literature. Table I systematically compares foundational contributions in the literature against the framework proposed in this paper.
 
-\begin{table*}[t]
+\begin{table}[htbp]
 \centering
 \caption{Comparison of Key Literature in Quantum Image Processing and Denoising}
 \label{tab:lit_comparison}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lllllll@{}}
 \toprule
 \textbf{Work} & \textbf{Focus Area} & \textbf{Encoding} & \textbf{Noise Model} & \textbf{Filter Type} & \textbf{Evaluation} & \textbf{Primary Limitation} \\ \midrule
@@ -87,15 +95,16 @@ Yao et al. \cite{yao2017quantum} & Edge Detection & Custom & Real (NMR) & Gradie
 Yan et al. \cite{yan2016quantum} & Gray-Code & QGIR & None (Ideal) & Coordinate ops & Simulation & Missing open-system Kraus channel analysis. \\
 Dabov et al. \cite{dabov2007image} & Denoising & Classical & Classical AWGN & BM3D 3D-Wiener & Real Images & Pure classical; no quantum state mapping. \\
 \textbf{Our Work} & \textbf{Noise Robustness} & \textbf{FRQI \& NEQR} & \textbf{CPTP Kraus} & \textbf{QHWT + Spatial} & \textbf{Aer + IBM NISQ} & \textbf{Comprehensive NISQ benchmark vs. BM3D.} \\ \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}
 
 As delineated in Table I, existing works either examine quantum representations under idealized assumptions or evaluate classical algorithms on standard classical channels. Our investigation bridges this divide by synthesizing physical open-system Kraus dynamics directly into quantum image registers, establishing the first rigorous quantitative crossover benchmark against classical baselines.
 
 \section{Background and Problem Formulation}
 To establish a rigorous mathematical foundation, we formalize the quantum state representations, open-system physical noise channels, and reconstruction objectives utilized throughout this investigation. The mathematical notations deployed across this paper are summarized in Table II.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Mathematical Notations and Symbols}
 \label{tab:notation}
@@ -170,8 +179,9 @@ We constrain our analysis to realistic NISQ devices where quantum error correcti
 \section{Proposed Methodology}
 The architecture of our comparative research framework is engineered to systematically track image state evolution from mathematical synthesis, through open-system quantum degradation, across quantum and classical filtering arenas, down to finite-shot reconstruction.
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
 \centering
+\resizebox{\linewidth}{!}{%
 \begin{tikzpicture}[
     node distance=1.4cm and 1.8cm,
     block/.style={rectangle, draw=blue!70, fill=blue!8, thick, minimum width=2.4cm, minimum height=1.1cm, align=center, rounded corners=2pt, font=\small},
@@ -199,10 +209,11 @@ The architecture of our comparative research framework is engineered to systemat
     \draw[arrow] (tomo_raw) -- (cdenoise);
     \draw[arrow] (tomo_q) -| (metrics);
     \draw[arrow] (cdenoise) -| (metrics);
-\end{tikzpicture}
+\end{tikzpicture}%
+}
 \caption{System architecture of the comparative quantum image robustness and denoising framework. It maps input images to quantum states, injects calibrated open-system Kraus noise, splits processing between in-register quantum circuits and classical post-measurement benchmark filters, and computes visual and quantum fidelity metrics.}
 \label{fig:architecture}
-\end{figure*}
+\end{figure}
 
 Fig. 1 illustrates the high-level architecture of our end-to-end framework. As shown in Fig. 1, clean classical visual data is split into two quantum encoding pipelines (FRQI and NEQR). After state preparation, the registers pass through calibrated open-system noise channels reproducing physical superconducting qubit hardware. The noisy state is then processed via two distinct pathways: (1) direct quantum-assisted filtering in-register, followed by projective measurement, and (2) direct measurement followed by classical digital filtering suites. Finally, both pathways are evaluated against clean ground truth by the metric engine.
 
@@ -242,45 +253,55 @@ The quantum circuit executes three sequential operations:
     \item \textit{Quantum Right-Shift Division:} Division by 4 ($2^2$) is executed natively without arithmetic gates by dropping the two least significant qubits of the sum register and relabeling qubit indices.
 \end{enumerate}
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
 \centering
+\resizebox{0.92\linewidth}{!}{%
 \begin{tikzpicture}[
-    node distance=1.2cm and 1.4cm,
-    stepnode/.style={rectangle, draw=blue!80, fill=blue!5, thick, minimum width=3.2cm, minimum height=0.9cm, align=center, rounded corners=3pt, font=\small},
-    decision/.style={diamond, draw=purple!80, fill=purple!5, thick, aspect=1.8, align=center, inner sep=1pt, font=\small},
+    node distance=1.1cm and 1.2cm,
+    stepnode/.style={rectangle, draw=blue!80, fill=blue!5, thick, minimum width=3.4cm, minimum height=1.0cm, align=center, rounded corners=3pt, font=\small},
+    decision/.style={diamond, draw=purple!80, fill=purple!5, thick, aspect=1.8, align=center, inner sep=2pt, font=\small},
     arrow/.style={-{Stealth[length=2.5mm]}, thick, draw=gray!80}
 ]
-    % Nodes
+    % Row 1: Setup & Noise Injection across top
     \node[stepnode] (s1) {1. Load Clean Image $I(x,y)$\\Normalize to $g_i \in [0, 1]$};
-    \node[stepnode, right=of s1] (s2) {2. State Compilation\\Select FRQI or NEQR};
-    \node[stepnode, right=of s2] (s3) {3. Inject Kraus Noise $\mathcal{E}$\\Depol / Thermal / Readout};
-    \node[decision, below=1.0cm of s3] (s4) {4. Denoising\\Mode?};
-    \node[stepnode, left=of s4] (s5a) {5a. Quantum Filter $U_{\text{filt}}$\\QHWT / Spatial Adder};
-    \node[stepnode, below=1.0cm of s4] (s5b) {5b. Shot Readout $\mathcal{M}$\\$N_{\text{shots}}$ Histogram};
-    \node[stepnode, left=of s5b] (s6b) {6b. Classical Filter\\BM3D / Bilateral / Med};
-    \node[stepnode, below=1.0cm of s5a] (s6a) {6a. Tomographic Readout\\Decoded $\hat{I}_{\text{quantum}}$};
-    \node[stepnode, below=1.0cm of s6b] (s7) {7. Benchmark Analysis\\PSNR, SSIM, $\mathcal{F}$, $p_{\text{crit}}$};
+    \node[stepnode, right=1.0cm of s1] (s2) {2. State Compilation\\Select FRQI or NEQR};
+    \node[stepnode, right=1.0cm of s2] (s3) {3. Inject Kraus Noise $\mathcal{E}$\\Depol / Thermal / Readout};
 
-    % Arrows
+    % Row 2: Branching decision below s2
+    \node[decision, below=1.2cm of s2] (s4) {4. Denoising\\Branch?};
+
+    % Row 3: Quantum Branch (Left) vs Classical Branch (Right)
+    \node[stepnode, below left=1.2cm and 0.3cm of s4] (s5a) {5a. Quantum Filter $U_{\text{filt}}$\\QHWT / Spatial Adder};
+    \node[stepnode, below right=1.2cm and 0.3cm of s4] (s5b) {5b. Shot Readout $\mathcal{M}$\\$N_{\text{shots}}$ Sampling Histogram};
+
+    % Row 4: Readout & Processing
+    \node[stepnode, below=1.0cm of s5a] (s6a) {6a. Quantum Readout\\Decoded State $\hat{I}_{\text{quantum}}$};
+    \node[stepnode, below=1.0cm of s5b] (s6b) {6b. Classical Filter Suite\\BM3D / Bilateral / Median};
+
+    % Row 5: Benchmark Analysis Reconvergence
+    \node[stepnode, minimum width=7.4cm, below=3.6cm of s4] (s7) {7. Benchmark Analysis Engine\\PSNR, SSIM, Fidelity $\mathcal{F}$, $p_{\text{crit}}$ Horizon};
+
+    % Connections
     \draw[arrow] (s1) -- (s2);
     \draw[arrow] (s2) -- (s3);
-    \draw[arrow] (s3) -- (s4);
-    \draw[arrow] (s4) -- node[above, font=\scriptsize] {Quantum} (s5a);
-    \draw[arrow] (s4) -- node[right, font=\scriptsize] {Classical} (s5b);
+    \draw[arrow] (s3.south) |- (s4.east);
+    \draw[arrow] (s4) -| node[above, font=\scriptsize, xshift=0.3cm] {Quantum} (s5a.north);
+    \draw[arrow] (s4) -| node[above, font=\scriptsize, xshift=-0.3cm] {Classical} (s5b.north);
     \draw[arrow] (s5a) -- (s6a);
     \draw[arrow] (s5b) -- (s6b);
-    \draw[arrow] (s6a) |- (s7);
-    \draw[arrow] (s6b) -- (s7);
-\end{tikzpicture}
+    \draw[arrow] (s6a.south) |- (s7.west);
+    \draw[arrow] (s6b.south) |- (s7.east);
+\end{tikzpicture}%
+}
 \caption{Workflow sequence of the experimental evaluation pipeline. The workflow traces image data from normalization through quantum compilation, noise injection, branch decision between quantum and classical filtering, and statistical benchmark analysis.}
 \label{fig:workflow}
-\end{figure*}
+\end{figure}
 
 Fig. 2 details the algorithmic execution workflow across the framework. As shown in Fig. 2, the pipeline enforces strict parity between quantum and classical filtering branches, ensuring that classical post-processing filters operate on the exact noisy measurement statistics produced by the physical noise model, preventing synthetic bias.
 
 Algorithm 1 provides the end-to-end pseudocode for the comparative evaluation procedure.
 
-\begin{algorithm}[t]
+\begin{algorithm}[H]
 \caption{Comparative Quantum vs. Classical Image Denoising Evaluation}
 \label{alg:framework}
 \KwIn{Clean Image $I \in \mathbb{R}^{2^n \times 2^n}$, representation type $T \in \{\text{FRQI}, \text{NEQR}\}$, noise parameters $\mathbf{\Theta} = \{p, T_1, T_2, \mathbf{\Lambda}\}$, shot budget $N_{\text{shots}}$}
@@ -312,6 +333,7 @@ Apply classical filter suite $\hat{I}_{\text{C}} \gets \text{BM3D}(\hat{I}_{\tex
 Compute metrics: $\text{PSNR}(I, \hat{I}_{\text{Q}})$, $\text{PSNR}(I, \hat{I}_{\text{C}})$, $\text{SSIM}(I, \hat{I}_{\text{Q}})$, $\text{SSIM}(I, \hat{I}_{\text{C}})$, and fidelity $\mathcal{F}$\;
 \Return{$\hat{I}_{\text{Q}}, \hat{I}_{\text{C}}, \mathbf{M}$}
 \end{algorithm}
+\FloatBarrier
 
 \subsection{Theoretical Analysis: The NEQR Bit-Significance Variance Theorem}
 A central theoretical result established in this paper concerns how physical bit-flip errors translate into radiometric distortion in NEQR states. In classical transmission, bit error rates assume symmetric corruption across channels. In NEQR, however, physical noise acts uniformly on all color register qubits, creating an exponential disparity in reconstructed pixel error. We state and prove this result below:
@@ -384,10 +406,11 @@ System performance and algorithmic fidelity are quantified across four rigorous 
 
 Table III provides a comprehensive parameter summary of the experimental configuration.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Experimental Configuration and Noise Parameters}
 \label{tab:exp_params}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lll@{}}
 \toprule
 \textbf{Parameter Category} & \textbf{Parameter Name} & \textbf{Value / Range} \\ \midrule
@@ -402,7 +425,8 @@ Gate Durations & Single-Qubit / CNOT & $35\text{ ns} / 300\text{ ns}$ \\
 Readout Error & $P(1|0), P(0|1)$ & $\epsilon_0 = 0.010, \epsilon_1 = 0.025$ \\
 Measurement Budget & Shots ($N_{\text{shots}}$) & $10^3, 10^4, 10^5, 10^6$ \\
 Random Trials & Seed Replications & 5 independent runs per parameter setting \\ \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \section{Results and Analysis}
@@ -411,10 +435,11 @@ We structure our empirical analysis directly around the four core Research Quest
 \subsection{Evaluation of RQ1: Representation Fragility (FRQI vs. NEQR)}
 To test RQ1, we evaluated FRQI and NEQR encodings under isolated noise channels: pure depolarizing noise, pure amplitude damping ($T_1$), pure dephasing ($T_2$), and asymmetric readout confusion.
 
-\begin{table*}[t]
+\begin{table}[htbp]
 \centering
 \caption{Restoration Performance (PSNR in dB and SSIM) Across Quantum and Classical Pipelines Under Simulated NISQ Noise ($p = 0.005, N_{\text{shots}} = 10^5$)}
 \label{tab:main_results}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 \textbf{Noise Channel} & \textbf{Unfiltered Noisy} & \textbf{Quantum QHWT} & \textbf{Quantum Spatial} & \textbf{Classical Median} & \textbf{Classical BM3D} \\ \midrule
@@ -424,17 +449,18 @@ $T_2$ Dephasing ($80\ \mu\text{s}$) & $21.80 \pm 0.39$ & $22.65 \pm 0.36$ & $23.
 Asymmetric Readout & $22.60 \pm 0.48$ & $23.40 \pm 0.44$ & $23.85 \pm 0.41$ & $26.80 \pm 0.35$ & $\mathbf{29.10 \pm 0.30}$ \\
 Composite NISQ Mimic & $17.25 \pm 0.61$ & $17.82 \pm 0.58$ & $18.15 \pm 0.54$ & $22.40 \pm 0.46$ & $\mathbf{24.75 \pm 0.41}$ \\ \midrule
 \textbf{Structural Index (SSIM)} & $0.684 \pm 0.021$ & $0.722 \pm 0.018$ & $0.735 \pm 0.016$ & $0.812 \pm 0.014$ & $\mathbf{0.886 \pm 0.011}$ \\ \bottomrule
-\end{tabular}
-\end{table*}
+\end{tabular}%
+}
+\end{table}
 
 Table IV presents the quantitative restoration results, while Fig. 4 illustrates the qualitative visual restoration matrix on the USC-SIPI Cameraman photographic benchmark. As observed from Table IV and Fig. 4, classical BM3D achieves the highest PSNR across all physical noise channels, outperforming in-register quantum denoising circuits by $4.5$ to $6.6\text{ dB}$, while simultaneously achieving superior structural correlation with an SSIM of $0.886 \pm 0.011$ compared to $0.722 \pm 0.018$ for the Quantum Haar filter. 
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/fig4_visual_comparison.pdf}
 \caption{Qualitative visual reconstruction comparison on the standard USC-SIPI Cameraman photographic benchmark ($4 \times 4$ sub-patch, $N_{\text{shots}} = 50,000$, depolarizing noise $p = 0.005$). From left to right: (a) Ground-truth clean photographic reference; (b) Raw noisy FRQI reconstruction exhibiting continuous phase drifts and background fading ($11.7\text{ dB}$, $\text{SSIM}=0.24$); (c) Raw noisy NEQR reconstruction exhibiting characteristic salt-and-pepper artifacts from computational basis flips ($7.1\text{ dB}$, $\text{SSIM}=0.12$); (d) Quantum Haar Wavelet Transform (QHWT) frequency sub-band thresholding ($11.6\text{ dB}$, $\text{SSIM}=0.19$); (e) Classical Median filtering ($11.1\text{ dB}$, $\text{SSIM}=0.06$); and (f) State-of-the-art classical BM3D collaborative Wiener filtering ($11.6\text{ dB}$, $\text{SSIM}=0.17$).}
 \label{fig:visual_comparison}
-\end{figure*}
+\end{figure}
 
 Under pure $T_1$ amplitude damping, unfiltered FRQI degrades catastrophically to $18.42\text{ dB}$. This degradation occurs because physical energy relaxation $|1\rangle \to |0\rangle$ on the single color qubit drives the continuous rotation angle $\theta_i \to 0$, causing systematic luminance decay and image darkening. In contrast, NEQR maintains computational basis stability under moderate $T_1$ relaxation because relaxation errors merely shift states towards the ground state $|00\dots 0\rangle$ without corrupting relative phase angles in the coordinate manifold. This confirms that discrete computational basis encoding possesses fundamentally superior physical resilience to thermal dissipation compared to continuous amplitude encoding.
 
@@ -445,7 +471,7 @@ When a bit-flip error was injected into the spatial coordinate register $|x_0\ra
 
 Furthermore, empirical testing rigorously confirmed the analytical predictions of Theorem 1 (NEQR Bit-Significance Variance Theorem), as plotted in Fig. 5. Injecting independent bit-flips into color qubit $C_7$ (the Most Significant Bit, MSB) caused catastrophic radiometric intensity jumps of $\pm 128$, reducing PSNR by over $18.4\text{ dB}$ and yielding visual distortion with an MSE exceeding $215$. In sharp contrast, injecting identical bit-flips into $C_0$ (the Least Significant Bit, LSB) caused negligible intensity shifts of $\pm 1$, reducing PSNR by less than $0.12\text{ dB}$. As demonstrated in Fig. 5, the error ratio between $C_7$ and $C_0$ exceeds $16,384\times$, validating the theoretical $(4^q - 1)/3$ trajectory with an empirical regression fit of $R^2 = 0.9972$. This confirms that unmitigated computational basis encoding suffers from an exponential vulnerability hierarchy across its register bits.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\linewidth]{figures/fig5_bitflip_sensitivity.pdf}
 \caption{Empirical verification of the NEQR Bit-Significance Variance Theorem across color register qubits $C_0$ (LSB) through $C_7$ (MSB). Left: Empirical Mean Squared Error (scatter points) versus theoretical prediction $\Delta\mathrm{MSE}_k = p(1-p)4^k$ (dashed red line) on a logarithmic scale. Right: Error magnification factor relative to the least significant bit, demonstrating an exponential $16,384\times$ damage amplification for unprotected MSB bit-flips.}
@@ -457,12 +483,14 @@ To address RQ3, we evaluated whether the Quantum Haar Wavelet Transform (QHWT) a
 
 Under ideal simulation conditions ($p=0$), both quantum filters perform as theoretically formulated: the forward Haar transform isolates high-frequency sub-band noise, and phase attenuation reduces variance while preserving structural edge boundaries, achieving exact lossless reconstruction at zero attenuation. However, under simulated NISQ hardware noise ($p=0.005$), executing the QHWT filter circuit requires 18 additional two-qubit CNOT gates and expands circuit DAG depth by 24 gate layers. As detailed in Table IV, while the QHWT filter achieves a slight restoration gain from $23.14\text{ dB}$ to $24.85\text{ dB}$ under weak depolarizing noise, its restoration margin is severely constrained compared to classical Median ($27.45\text{ dB}$) and classical BM3D ($29.82\text{ dB}$). The additional entangling gates required by the quantum filter introduce physical gate errors that counterbalance its mathematical filtering capability.
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
 \centering
+\resizebox{0.88\linewidth}{!}{%
 \begin{tikzpicture}
     \begin{scope}[xscale=1.1, yscale=0.7]
         % Axes
-        \draw[->, thick] (0, 0) -- (10.5, 0) node[right, font=\small] {Physical Error Rate $p$ ($\log_{10}$)};
+        \draw[->, thick] (0, 0) -- (10.5, 0);
+        \node[below=0.55cm, font=\small] at (5.25, 0) {Physical Error Rate $p$ ($\log_{10}$)};
         \draw[->, thick] (0, 0) -- (0, 7.5) node[above, font=\small] {Reconstruction PSNR (dB)};
 
         % X Ticks
@@ -493,34 +521,35 @@ Under ideal simulation conditions ($p=0$), both quantum filters perform as theor
         \draw[very thick, orange!90!black] plot[smooth] coordinates {
             (0.5, 7.1) (1.0, 7.0) (3.5, 6.2) (5.5, 5.0) (7.0, 3.8) (8.5, 2.4) (9.5, 1.8)
         };
-        \node[orange!90!black, font=\scriptsize, anchor=west] at (9.5, 2.0) {Classical BM3D};
+        \node[orange!90!black, font=\scriptsize, anchor=west] at (9.6, 2.0) {Classical BM3D};
 
         % Classical Median (Green)
         \draw[very thick, green!60!black] plot[smooth] coordinates {
             (0.5, 6.5) (1.0, 6.4) (3.5, 5.7) (5.5, 4.6) (7.0, 3.4) (8.5, 2.1) (9.5, 1.5)
         };
-        \node[green!60!black, font=\scriptsize, anchor=west] at (9.5, 1.4) {Classical Median};
+        \node[green!60!black, font=\scriptsize, anchor=west] at (9.6, 1.4) {Classical Median};
 
         % Quantum QHWT (Blue)
         \draw[very thick, blue!80] plot[smooth] coordinates {
             (0.5, 6.6) (1.0, 6.4) (3.5, 5.2) (5.5, 3.7) (6.5, 2.6) (8.0, 1.6) (9.5, 1.1)
         };
-        \node[blue!80, font=\scriptsize, anchor=west] at (9.5, 0.9) {Quantum QHWT};
+        \node[blue!80, font=\scriptsize, anchor=west] at (9.6, 0.9) {Quantum QHWT};
 
         % Raw Noisy Unfiltered (Red dashed)
         \draw[thick, red!70, dashed] plot[smooth] coordinates {
             (0.5, 6.2) (1.0, 6.0) (3.5, 4.7) (5.5, 3.2) (7.0, 2.1) (8.5, 1.3) (9.5, 0.8)
         };
-        \node[red!70, font=\scriptsize, anchor=west] at (9.5, 0.5) {Raw Unfiltered};
+        \node[red!70, font=\scriptsize, anchor=west] at (9.6, 0.5) {Raw Unfiltered};
 
         % Critical threshold marker
         \draw[thick, purple!80, dotted] (5.7, 0) -- (5.7, 7.2);
         \node[purple!80, font=\scriptsize, fill=white, inner sep=2pt] at (5.7, 6.6) {$p_{\text{crit}} \approx 0.008$};
     \end{scope}
-\end{tikzpicture}
+\end{tikzpicture}%
+}
 \caption{Reconstruction PSNR scaling as a function of physical error rate $p$. Classical BM3D strictly dominates in-register quantum filtering across the operational spectrum. At $p_{\text{crit}} \approx 0.008$, the quantum filter curve intersects the raw unfiltered line, demarcating the boundary where quantum denoising becomes counterproductive.}
 \label{fig:noise_scaling}
-\end{figure*}
+\end{figure}
 
 \subsection{Evaluation of RQ4: The Quantum Advantage Horizon ($p_{\text{crit}}$)}
 Fig. 3 illustrates the scaling trajectory of reconstruction PSNR across four decades of physical gate error rates $p \in [10^{-4}, 10^{-1}]$. As shown in Fig. 3, classical BM3D maintains clear visual dominance over the entire operational spectrum, providing consistent gains of $4.5$ to $6.0\text{ dB}$ over in-register quantum filtering.
@@ -534,6 +563,7 @@ To evaluate architectural sensitivities, we conducted two systematic ablation st
     \item \textit{Ablation on Measurement Shot Budget ($N_{\text{shots}}$):} We scaled the projective measurement budget across $N_{\text{shots}} \in \{10^3, 10^4, 10^5, 10^6\}$. In FRQI, continuous amplitude estimation introduces statistical shot variance scaling as $\epsilon \propto 1/\sqrt{N_{\text{shots}}}$. At $N_{\text{shots}} = 10^3$, FRQI was unable to resolve pixel values above a baseline PSNR of $16.2\text{ dB}$, requiring $N_{\text{shots}} \ge 10^5$ to exceed $35\text{ dB}$. In contrast, NEQR basis state extraction utilizing majority-voting correctly resolved pixel bitstrings with $>99.2\%$ classification accuracy at $N_{\text{shots}} = 10^4$, reducing shot budget requirements by an order of magnitude.
 \end{enumerate}
 
+\FloatBarrier
 \section{Discussion}
 Our empirical findings and analytical derivations establish quantitative boundaries for the practical implementation of Quantum Image Processing on near-term hardware.
 
@@ -553,6 +583,7 @@ We identify three primary threats to validity:
 \subsection{Ethical Considerations}
 This investigation adheres to the highest standards of scientific ethics and reproducible research. The benchmark patterns and synthetic phantom datasets utilized involve no personally identifiable visual information, facial recognition data, or privacy-invasive surveillance applications.
 
+\FloatBarrier
 \section{Conclusion and Future Work}
 In this paper, we presented an empirical and theoretical investigation of quantum image representation robustness and denoising feasibility under realistic open-system NISQ noise models. Addressing our core research questions:
 \begin{enumerate}
@@ -570,6 +601,7 @@ During the preparation of this manuscript, AI assistance (large language model t
 \section*{Author Contributions}
 \textbf{Prathmesh Ojha} developed the core quantum simulation framework, implemented FRQI and NEQR state synthesizers, drafted the mathematical proofs, executed noise sweeps, and authored the manuscript. \textbf{Maheshwar Dwivedy} provided conceptual guidance on quantum circuit transpilation and classical benchmark suite integration. \textbf{Kiran Khatter} supervised the research, reviewed the theoretical formulation, and edited the final manuscript.
 
+\FloatBarrier
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
