@@ -19,9 +19,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 COPY requirements.txt ./
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+RUN uv pip install --python /opt/venv -r requirements.txt
 
 # ==============================================================================
 # Stage 2: Backend Runtime (FastAPI + Qiskit Quantum Simulator)
