@@ -18,10 +18,13 @@
   --obsidian: #090a0f;
 }
 
+html,
 body {
   background-color: var(--obsidian);
   color: #e2e8f0;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* Custom scrollbar (thin, cyan thumb) */

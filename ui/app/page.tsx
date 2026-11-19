@@ -114,9 +114,9 @@ export default function QuantumStudioDashboard() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#090a0f] text-[#e2e8f0]">
+    <div className="flex flex-col h-screen max-h-screen overflow-hidden bg-[#090a0f] text-[#e2e8f0]">
       {/* Top Header Bar */}
-      <header className="border-b border-white/10 bg-white/[0.02] backdrop-blur-md px-6 py-4">
+      <header className="shrink-0 border-b border-white/10 bg-white/[0.02] backdrop-blur-md px-6 py-3">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-[#00f5ff] to-[#a855f7] flex items-center justify-center font-bold text-[#090a0f] text-lg shadow-[0_0_15px_rgba(0,245,255,0.4)]">
@@ -237,11 +237,11 @@ export default function QuantumStudioDashboard() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-6 flex flex-col gap-6">
+      <main className="flex-1 min-h-0 max-w-7xl w-full mx-auto px-4 py-3 md:px-6 md:py-4 flex flex-col gap-3 md:gap-4 overflow-y-auto lg:overflow-hidden">
         {/* Live run status */}
         {isRunning && (
           <section
-            className={`rounded-xl border px-4 py-3 transition-colors ${
+            className={`shrink-0 rounded-xl border px-4 py-2.5 transition-colors ${
               awaitingNextStep
                 ? 'border-[#a855f7]/50 bg-[#a855f7]/10'
                 : 'border-[#00f5ff]/30 bg-[#00f5ff]/5'
@@ -288,14 +288,14 @@ export default function QuantumStudioDashboard() {
         )}
 
         {/* Main Content & Vertical Stepper Layout */}
-        <div className="flex flex-col lg:flex-row items-start gap-6">
+        <div className="flex-1 min-h-0 w-full flex flex-col lg:flex-row items-stretch gap-6 overflow-visible lg:overflow-hidden">
           {/* Active Stage Content (Left / Main) */}
-          <section className="flex-1 w-full min-w-0 min-h-[500px]">
+          <section className="flex-1 min-w-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-2 pb-6">
             {renderActiveStage()}
           </section>
 
           {/* Right Sidebar: Vertical Pipeline Stepper */}
-          <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-6 order-first lg:order-last">
+          <aside className="w-full lg:w-64 shrink-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 order-first lg:order-last">
             <PipelineStepper
               activeStage={activeStage}
               onStageClick={(stage) => setActiveStage(stage)}
