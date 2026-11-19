@@ -88,11 +88,11 @@ export const PipelineStepper: React.FC<PipelineStepperProps> = ({
     );
   }
 
-  // Vertical Orientation (Pinned to the right side of the page)
+  // Vertical Orientation (Pinned to the right side of the page, extends 100% height)
   return (
-    <nav aria-label="Pipeline Stages" className="w-full">
-      <div className="flex flex-col gap-2 p-3 rounded-2xl bg-white/[0.02] backdrop-blur-md border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-        <div className="px-3 py-2 flex items-center justify-between border-b border-white/5 mb-1">
+    <nav aria-label="Pipeline Stages" className="w-full h-full flex flex-col">
+      <div className="flex flex-col h-full gap-2 p-3.5 rounded-2xl bg-white/[0.02] backdrop-blur-md border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
+        <div className="px-3 py-2 flex items-center justify-between border-b border-white/5 mb-1 shrink-0">
           <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
             Pipeline Stages
           </span>
@@ -101,7 +101,7 @@ export const PipelineStepper: React.FC<PipelineStepperProps> = ({
           </span>
         </div>
 
-        <div className="flex flex-col gap-1.5 relative">
+        <div className="flex-1 min-h-0 flex flex-col justify-between py-1 relative">
           {STAGES.map((stage, idx) => {
             const stageNumber = stage.id;
             const isActive = stageNumber === activeStage;
@@ -109,12 +109,12 @@ export const PipelineStepper: React.FC<PipelineStepperProps> = ({
             const isLast = idx === STAGES.length - 1;
 
             return (
-              <div key={stage.id} className="relative">
+              <div key={stage.id} className="relative flex-1 flex flex-col justify-center">
                 {/* Connecting vertical line to next stage */}
                 {!isLast && (
                   <div
-                    className={`absolute left-[25px] top-[34px] w-[2px] h-[calc(100%-10px)] transition-colors z-0 ${
-                      isCompleted ? 'bg-[#10b981]/40' : 'bg-white/10'
+                    className={`absolute left-[23px] top-1/2 h-full w-[2px] transition-colors z-0 ${
+                      isCompleted ? 'bg-[#10b981]/50 shadow-[0_0_6px_rgba(16,185,129,0.3)]' : 'bg-white/10'
                     }`}
                   />
                 )}
@@ -130,12 +130,12 @@ export const PipelineStepper: React.FC<PipelineStepperProps> = ({
                 >
                   {/* Step circle / indicator */}
                   <div
-                    className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold font-mono transition-all ${
+                    className={`w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-xs font-semibold font-mono transition-all z-10 ${
                       isActive
                         ? 'bg-[#00f5ff] text-[#090a0f] shadow-[0_0_12px_#00f5ff]'
                         : isCompleted
-                        ? 'bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/40 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
-                        : 'bg-white/5 text-slate-500 border border-white/10 group-hover:border-white/20'
+                        ? 'bg-[#090a0f] text-[#10b981] border border-[#10b981]/60 shadow-[0_0_8px_rgba(16,185,129,0.2)]'
+                        : 'bg-[#090a0f] text-slate-500 border border-white/10 group-hover:border-white/20'
                     }`}
                   >
                     {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[2.5]" /> : stageNumber}

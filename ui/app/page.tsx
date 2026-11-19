@@ -295,7 +295,7 @@ export default function QuantumStudioDashboard() {
           </section>
 
           {/* Right Sidebar: Vertical Pipeline Stepper */}
-          <aside className="w-full lg:w-64 shrink-0 lg:h-full lg:overflow-y-auto pr-0 lg:pr-1 order-first lg:order-last">
+          <aside className="w-full lg:w-64 shrink-0 lg:h-full flex flex-col pr-0 lg:pr-1 order-first lg:order-last pb-6 lg:pb-0">
             <PipelineStepper
               activeStage={activeStage}
               onStageClick={(stage) => setActiveStage(stage)}
