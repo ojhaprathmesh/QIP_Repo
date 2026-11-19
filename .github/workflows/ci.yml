@@ -45,7 +45,7 @@ jobs:
         env:
           QIP_PACING_SCALE: "0.0"
           PYTHONPATH: "."
-        run: uv run pytest -v
+        run: uv run --no-sync pytest -v
 
   frontend-build:
     name: Frontend Build (Next.js)
