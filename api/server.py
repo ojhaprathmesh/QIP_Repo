@@ -85,6 +85,26 @@ async def pace(seconds: float) -> None:
         await asyncio.sleep(delay)
 
 
+@app.get("/")
+async def root():
+    """Root discovery endpoint providing service overview, health, and documentation links."""
+    return {
+        "service": "QIP Quantum Image Processing Simulation Engine",
+        "status": "online",
+        "version": "1.0.0",
+        "studio_ui": "https://qip.ojhaprathmesh.in",
+        "documentation": "/docs",
+        "endpoints": {
+            "health": "/healthz",
+            "api_health": "/api/health",
+            "websocket_simulation": "/ws/simulate",
+            "benchmark_noise_sweep": "/api/benchmarks/noise-sweep",
+            "benchmark_denoising": "/api/benchmarks/denoising",
+            "benchmark_bitflip_study": "/api/benchmarks/bitflip-study"
+        }
+    }
+
+
 @app.get("/api/health")
 @app.get("/healthz")
 async def health_check():

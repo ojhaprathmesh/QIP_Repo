@@ -10,7 +10,7 @@
 > **How Robust Are Quantum Images? Investigating Noise Propagation, Representation Fragility, and Quantum-Assisted Denoising under NISQ Realities.**
 >
 > 🌐 **Live Web Application:** [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in)  
-> ⚡ **FastAPI Backend (Render):** [https://qip-backend-93n1.onrender.com](https://qip-backend.onrender.com) (`/ws/simulate`, `/healthz`, `/api/benchmarks/*`)
+> ⚡ **FastAPI Backend (Render):** [https://qip-backend.onrender.com](https://qip-backend.onrender.com) (Swagger Docs: [`/docs`](https://qip-backend-93n1.onrender.com/docs), Health: [`/healthz`](https://qip-backend-93n1.onrender.com/healthz))
 
 An empirical and theoretical quantum computing research and systems engineering framework comparing **FRQI** (Flexible Representation of Quantum Images) and **NEQR** (Novel Enhanced Quantum Representation) under realistic quantum noise channels (Depolarizing, Amplitude Damping $T_1$, Dephasing $T_2$, and Readout Error), formulating a **Quantum-Assisted Wavelet/Spatial Denoising Pipeline**, and establishing the critical breakdown boundary where quantum representations collapse compared to classical filters (Gaussian, Median, Bilateral, BM3D).
 

@@ -10,6 +10,14 @@ server.PACING_SCALE = 0.0
 
 client = TestClient(app)
 
+def test_root_endpoint():
+    response = client.get("/")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "online"
+    assert "endpoints" in data
+    assert data["endpoints"]["health"] == "/healthz"
+
 def test_health_check():
     response = client.get("/api/health")
     assert response.status_code == 200
