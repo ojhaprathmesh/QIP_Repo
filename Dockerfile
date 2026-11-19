@@ -1,27 +1,23 @@
 # syntax=docker/dockerfile:1
 
 # ==============================================================================
-# Stage 1: Backend Builder (Python dependencies into isolated virtual env)
+# Stage 1: Backend Builder (Python dependencies into isolated virtual env from uv.lock)
 # ==============================================================================
 FROM python:3.11-slim AS backend-builder
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    UV_COMPILE_BYTECODE=1
 
-WORKDIR /build
+WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-COPY requirements.txt ./
-RUN uv pip install --python /opt/venv -r requirements.txt
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
 # ==============================================================================
 # Stage 2: Backend Runtime (FastAPI + Qiskit Quantum Simulator)
@@ -43,7 +39,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && groupadd --system --gid 1001 appgroup \
     && useradd --system --uid 1001 --gid appgroup --create-home appuser
 
-COPY --from=backend-builder /opt/venv /opt/venv
+COPY --from=backend-builder --chown=appuser:appgroup /app/.venv /opt/venv
 COPY --chown=appuser:appgroup api/ ./api/
 COPY --chown=appuser:appgroup src/ ./src/
 COPY --chown=appuser:appgroup config/ ./config/

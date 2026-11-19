@@ -40,15 +40,14 @@ jobs:
         with:
           enable-cache: true
 
-      - name: Install Python dependencies
-        run: |
-          uv pip install --system -r requirements.txt httpx
+      - name: Install dependencies from uv.lock
+        run: uv sync --frozen
 
       - name: Run pytest test suite
         env:
           QIP_PACING_SCALE: "0.0"
           PYTHONPATH: "."
-        run: pytest -v
+        run: uv run pytest -v
 
   frontend-build:
     name: Frontend Build (Next.js)
