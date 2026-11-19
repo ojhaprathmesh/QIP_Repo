@@ -3,7 +3,7 @@
 > **Interactive 6-Stage Web Studio for Quantum Image Robustness, Open-System Decoherence, and Denoising Benchmarking**
 >
 > 🌐 **Live Production URL:** [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in)  
-> ⚡ **Connected Simulation Engine:** FastAPI + Qiskit on Render (`https://qip-backend-93n1.onrender.com`)
+> ⚡ **Connected Simulation Engine:** FastAPI + Qiskit on Render (`https://qip-backend.onrender.com`)
 
 ---
 
@@ -98,5 +98,5 @@ Built with **Next.js 16 (React 19)**, **Tailwind CSS v4**, **Framer Motion**, an
 
 - **Vercel:** Automatically deploys on git push to `main` with root directory set to `ui`.
 - **Environment Variables in Production:**
-  - `NEXT_PUBLIC_API_URL`: `https://qip-backend-93n1.onrender.com`
-  - `NEXT_PUBLIC_WS_URL`: `wss://qip-backend-93n1.onrender.com/ws/simulate`
+  - `NEXT_PUBLIC_API_URL`: `https://qip-backend.onrender.com`
+  - `NEXT_PUBLIC_WS_URL`: `wss://qip-backend.onrender.com/ws/simulate`
