@@ -3,9 +3,14 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Qiskit 1.2+](https://img.shields.io/badge/Qiskit-1.2%2B-6929C4.svg)](https://qiskit.org/)
-[![Status: Scaffolding](https://img.shields.io/badge/Project%20Status-Initial%20Setup%20%2F%20Scaffolding-orange.svg)](#current-project-status)
+[![CI](https://github.com/ojhaprathmesh/QIP_Repo/actions/workflows/ci.yml/badge.svg)](https://github.com/ojhaprathmesh/QIP_Repo/actions/workflows/ci.yml)
+[![Live Studio](https://img.shields.io/badge/Live%20Studio-qip.ojhaprathmesh.in-00f5ff.svg)](https://qip.ojhaprathmesh.in)
+[![Status: Production](https://img.shields.io/badge/Status-Production%20%2F%20Deployed-10b981.svg)](#current-project-status)
 
 > **How Robust Are Quantum Images? Investigating Noise Propagation, Representation Fragility, and Quantum-Assisted Denoising under NISQ Realities.**
+>
+> 🌐 **Live Web Application:** [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in)  
+> ⚡ **FastAPI Backend (Render):** [https://qip-backend-93n1.onrender.com](https://qip-backend.onrender.com) (`/ws/simulate`, `/healthz`, `/api/benchmarks/*`)
 
 An empirical and theoretical quantum computing research and systems engineering framework comparing **FRQI** (Flexible Representation of Quantum Images) and **NEQR** (Novel Enhanced Quantum Representation) under realistic quantum noise channels (Depolarizing, Amplitude Damping $T_1$, Dephasing $T_2$, and Readout Error), formulating a **Quantum-Assisted Wavelet/Spatial Denoising Pipeline**, and establishing the critical breakdown boundary where quantum representations collapse compared to classical filters (Gaussian, Median, Bilateral, BM3D).
 
@@ -151,20 +156,19 @@ flowchart TB
 
 ## 5. Current Project Status
 
-> **Milestone:** Initial Project Scaffolding & Setup Established
+> **Milestone:** All 6 Research & Engineering Phases Fully Implemented & Deployed
 >
-> The project skeleton, packaging configuration, configuration profiles, testing harness, and module interfaces have been generated in accordance with [`PLAN.md`](PLAN.md).
+> The complete end-to-end quantum simulation engine, REST API, WebSocket streaming bridge, Next.js 16 Web Studio, and automated CI test suite (**48/48 tests passing**) are fully operational.
 
-- [x] Research and Engineering Blueprint ([`PLAN.md`](PLAN.md))
-- [x] Repository Architecture and Directory Scaffolding
-- [x] Packaging (`pyproject.toml`, `uv.lock`, `environment.yml`)
-- [x] Preset Noise Profiles & Hardware Configuration (`config/`)
-- [x] Baseline Filter Suite and Metric Calculator (`src/metrics/`, `src/classical_denoising/`)
-- [x] Unit Test Infrastructure (`tests/`)
-- [ ] **Phase 1 (Upcoming):** FRQI/NEQR Circuit Transpilation and Parameterized Aer Noise Models
-- [ ] **Phase 2:** Quantum Haar Wavelet & Spatial Adder Denoising Circuits
-- [ ] **Phase 3:** Large-Scale Empirical Noise Sweeps (EXP-01 through EXP-05)
-- [ ] **Phase 4:** Phase Transition ($p_{\text{crit}}$) Identification & Scientific Manuscript
+- [x] **Research & Engineering Blueprint:** Exhaustive specification and proofs ([`PLAN.md`](PLAN.md))
+- [x] **Repository Architecture & Packaging:** Deterministic `uv.lock` dependency locking, zero legacy `requirements.txt` debt
+- [x] **Phase 1 (Representation & Noise):** FRQI & NEQR circuits, Aer Depolarizing, $T_1$, $T_2$, and Readout Kraus models
+- [x] **Phase 2 (Denoising Engines):** Quantum Haar Wavelet (QHWT), Spatial Adder, VQDAE, and Classical Baseline suite (BM3D, Bilateral, Median, Gaussian)
+- [x] **Phase 3A (Simulation Backend):** FastAPI server (`api/server.py`) with `/ws/simulate`, `/api/health`, `/healthz`, and REST benchmarks
+- [x] **Phase 3B (Quantum Studio UI):** Next.js 16 App Router interface (`ui/`) with 6 stages, responsive 100vh viewport, and vertical pipeline stepper
+- [x] **Phase 4 (Empirical Sweeps):** Parametric noise sweep, NEQR bit-flip sensitivity study, and denoising benchmark datasets tracked in `data/experiment_results/`
+- [x] **Phase 5 (Containerization & Deployment):** Multi-stage `Dockerfile`, `docker-compose.yml`, `render.yaml`, GitHub Actions CI, and production deployment at [`qip.ojhaprathmesh.in`](https://qip.ojhaprathmesh.in)
+- [x] **Phase 6 (Academic Manuscript):** Publication-ready IEEE-format LaTeX paper and vector figures in `paper/`
 
 ---
 
@@ -172,57 +176,54 @@ flowchart TB
 
 ```
 .
+.
+├── api/                                # FastAPI Streaming Microservice & REST APIs
+│   ├── event_bus.py                   # In-process asynchronous Pub/Sub dispatcher
+│   ├── schemas.py                     # Pydantic v2 simulation request & telemetry models
+│   └── server.py                      # REST endpoints (/healthz, /api/benchmarks/*) & WebSocket (/ws/simulate)
 ├── config/
 │   ├── benchmark_images.yaml         # Target image sizes and synthetic test patterns
 │   ├── hardware_backends.yaml        # IBM Quantum calibration snapshots (FakeBrisbane)
 │   └── noise_profiles.yaml           # Preset noise parameters (T1, T2, infidelities)
 ├── data/
-│   ├── experiment_results/           # Raw measurement counts and run caches (.gitkeep)
+│   ├── experiment_results/           # Tracked benchmark datasets (noise_sweep, bitflip_study, denoising)
 │   ├── noisy_classical/              # Pre-corrupted test images (.gitkeep)
 │   └── raw_images/                   # Clean benchmark image files (.gitkeep)
 ├── notebooks/                        # Interactive Jupyter notebooks (.gitkeep)
+├── paper/                            # Publication-grade IEEEtran LaTeX paper & figures
 ├── src/
-│   ├── classical_denoising/          # Classical Baseline Filters
-│   │   ├── __init__.py
-│   │   ├── bm3d_wrapper.py           # BM3D comparative baseline wrapper
-│   │   └── standard_filters.py       # Mean, Median, Gaussian, Bilateral implementations
-│   ├── encoding/                     # Quantum Image State Preparation
-│   │   ├── __init__.py
-│   │   ├── frqi.py                   # FRQI circuit builder & state decoder
-│   │   └── neqr.py                   # NEQR circuit builder & basis state decoder
-│   ├── experiments/                  # Master Batch Execution Scripts
-│   │   ├── __init__.py
-│   │   ├── run_bitflip_study.py      # Master script for EXP-03
-│   │   ├── run_denoising_benchmark.py# Master script for EXP-04 and EXP-05
-│   │   └── run_noise_sweep.py        # Master script for EXP-01 and EXP-02
-│   ├── metrics/                      # Quantitative Evaluation Metrics
-│   │   ├── __init__.py
-│   │   ├── image_metrics.py          # PSNR, SSIM, MSE functions
-│   │   └── quantum_metrics.py        # State fidelity, circuit depth, CNOT count
-│   ├── noise/                        # Quantum Noise Injection Models
-│   │   ├── __init__.py
-│   │   ├── channels.py               # Depolarizing, T1/T2, and composite noise builders
-│   │   └── readout.py                # Measurement confusion matrix simulator
-│   ├── quantum_denoising/            # Quantum Image Filtering Circuits
-│   │   ├── __init__.py
-│   │   ├── qhwt.py                   # Quantum Haar Wavelet Transform & thresholding
-│   │   ├── spatial_adder.py          # Quantum Neighborhood Average filter
-│   │   └── vqdae.py                  # Variational Quantum Denoising Autoencoder
-│   └── __init__.py
-├── tests/                            # Unit test suite
-│   ├── __init__.py
-│   ├── test_denoising.py             # Tests for filter operations
-│   ├── test_encoding.py              # Tests for state encoders
-│   ├── test_metrics.py               # Tests for PSNR/SSIM/MSE evaluation
-│   └── test_noise.py                 # Tests for noise channels
-├── .gitignore                        # Git ignore rules for Python, notebooks, and data
-├── environment.yml                   # Conda environment specification
-├── LICENSE                           # MIT License
-├── main.py                           # Unified master CLI and end-to-end pipeline runner
+│   ├── classical_denoising/          # Classical Baseline Filters (BM3D, Bilateral, Median, Gaussian)
+│   ├── encoding/                     # Quantum Image State Preparation (FRQI & NEQR)
+│   ├── experiments/                  # Master Batch Execution Sweeps (EXP-01 through EXP-05)
+│   ├── metrics/                      # PSNR, SSIM, MSE, State Fidelity, Circuit Depth, CNOT count
+│   ├── noise/                        # CPTP Kraus Noise Models (Depolarizing, T1/T2, Readout Confusion)
+│   └── quantum_denoising/            # QHWT, Spatial Moving Average Adder, and PennyLane/Qiskit VQDAE
+├── tests/                            # Comprehensive Automated Test Suite (48 tests passing)
+│   ├── test_api.py                   # REST endpoints, WebSocket simulation, and telemetry
+│   ├── test_denoising.py             # QHWT and Spatial Adder filter tests
+│   ├── test_denoising_benchmark.py   # EXP-04/05 benchmark runner tests
+│   ├── test_encoding.py              # FRQI & NEQR lossless & shot tests
+│   ├── test_metrics.py               # PSNR/SSIM/MSE evaluation tests
+│   ├── test_noise.py                 # CPTP Kraus channel tests
+│   ├── test_sweeps.py                # EXP-01/02/03 runner tests
+│   └── test_vqdae.py                 # VQDAE ansatz, optimization, and denoising tests
+├── ui/                               # Next.js 16 Real-Time Quantum Studio Dashboard
+│   ├── app/                          # Next.js App Router (layout, page, globals.css)
+│   ├── components/                   # 6-Stage modular pipeline stages & vertical stepper
+│   ├── lib/                          # Zustand store, WebSocket stream hook, types
+│   └── package.json                  # Next.js 16, React 19, Tailwind CSS v4, Lucide, Recharts
+├── .github/workflows/ci.yml          # Automated multi-version CI (Python 3.11, 3.12, Node 20)
+├── docker-compose.yml                # Unified multi-service orchestration
+├── Dockerfile                        # Multi-stage production backend container
+├── render.yaml                       # Render Cloud deployment blueprint
+├── main.py                           # Master CLI and end-to-end pipeline runner
+├── pyproject.toml                    # Modern package metadata & dev dependency specification
+├── uv.lock                           # Deterministic pinned dependency lockfile
+├── GUIDE.md                          # Step-by-step setup and execution guide
 ├── PLAN.md                           # Master Research & Systems Engineering Plan
-├── pyproject.toml                    # Standard Python package metadata and tool configs
-├── README.md                         # Project documentation and current status
-└── uv.lock                            # Deterministic pinned dependency lockfile
+├── PREP.md                           # Mid-term project defense and viva battlepack
+├── PROGRESS_REPORT.md                # Comprehensive project progress report
+└── README.md                         # Main documentation and deployment overview
 ```
 
 ---
@@ -230,10 +231,11 @@ flowchart TB
 ## 7. Getting Started
 
 ### Prerequisites
-- Python 3.10 or 3.11
-- [`uv`](https://github.com/astral-sh/uv) (recommended) or `conda`
+- Python 3.10 to 3.14 (managed via `uv`)
+- Node.js 20+ (for the Next.js UI)
+- [`uv`](https://github.com/astral-sh/uv) (recommended for deterministic lockfile execution)
 
-### Installation
+### Installation & Local Setup
 
 1. **Clone the repository:**
    ```bash
@@ -241,40 +243,39 @@ flowchart TB
    cd QIP_Repo
    ```
 
-2. **Set up environment:**
-
-   **Option A: Using `uv` (Recommended - fastest setup)**
+2. **Install Python backend dependencies from `uv.lock`:**
    ```bash
-   uv sync
+   # Sync virtual environment deterministically
+   uv sync --frozen --all-extras
    source .venv/bin/activate
    ```
 
-   **Option B: Using standard `venv` and `pip`**
+3. **Run the 48-test verification suite:**
    ```bash
-   pip install uv
-   uv sync
-   source .venv/bin/activate
+   uv run --no-sync pytest -v
    ```
 
-   **Option C: Using Conda**
+4. **Launch the FastAPI Simulation Backend:**
    ```bash
-   conda env create -f environment.yml
-   conda activate qip
+   uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
    ```
+   * REST Health Check: `http://localhost:8000/healthz`
+   * WebSocket Streaming: `ws://localhost:8000/ws/simulate`
+   * Benchmark Datasets: `http://localhost:8000/api/benchmarks/noise-sweep`
 
-3. **Run the test suite:**
+5. **Launch the Next.js 16 Quantum Studio UI:**
    ```bash
-   # With active environment:
-   pytest
-
-   # Or directly with uv:
-   uv run pytest
+   cd ui
+   npm ci
+   npm run dev
    ```
+   Visit `http://localhost:3000` to interact with the full 6-stage studio.
 
-4. **Run the end-to-end pipeline demo:**
-   ```bash
-   python main.py --demo
-   ```
+### Production Deployment
+
+* **Frontend (Vercel):** [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in)
+* **Backend (Render):** Automatically deployed via [`render.yaml`](render.yaml) with native `uv.lock` frozen sync and health checks at `/healthz`.
+* **Docker:** Launch everything locally via `docker compose up --build`.
 ---
 
 ## 8. Implementation Roadmap

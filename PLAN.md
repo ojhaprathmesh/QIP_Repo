@@ -840,20 +840,21 @@ The research project and engineering codebase are tracked against explicit, phas
 - [x] Critical noise threshold $p_{\text{crit}}$ numerically derived for each noise channel and image representation.
 - [x] Breakeven circuit depth identified where quantum filtering becomes self-defeating on NISQ hardware ($D_{\text{crit}} \approx 240$ gates).
 
-### Phase 5 — Research Environment Containerization & Reproducible Artifact Packaging
+### Phase 5 — Research Environment Containerization & Cloud Deployment
 
-- [ ] Multi-stage backend Dockerfile (`Dockerfile.backend`) on Python 3.12/3.14 slim with non-root security.
-- [ ] Multi-stage frontend Dockerfile (`Dockerfile.frontend`) with Next.js standalone output.
-- [ ] Multi-container `docker-compose.yml` linking simulation backend, Next.js UI, and experimental volume mounts.
-- [ ] Automated smoke test script (`scripts/docker_smoke_test.sh`) validating build, API health, and WS handshakes.
-- [ ] One-click figure reproduction script generating all paper artifacts and benchmark curves from saved experiment logs.
+- [x] Multi-stage backend Dockerfile (`Dockerfile`) on Python 3.12 slim with non-root security and `uv` lockfile sync.
+- [x] Multi-container orchestration (`docker-compose.yml`) linking simulation backend, Next.js UI, and experimental volumes.
+- [x] Cloud deployment blueprint (`render.yaml`) for automated FastAPI backend deployment on Render.
+- [x] Custom domain production deployment on Vercel and Render ([`qip.ojhaprathmesh.in`](https://qip.ojhaprathmesh.in)).
+- [x] Automated multi-version GitHub Actions CI (`.github/workflows/ci.yml`) validating Python 3.11, 3.12, and Node 20.
+- [x] Tracked experiment result datasets in `data/experiment_results/` exposed via REST endpoints (`/api/benchmarks/*`).
 
 ### Phase 6 — Academic Publication, Research Manuscript & Defense Deliverables
 
-- [ ] Comprehensive IEEE Transactions/Conference format research manuscript completed (`docs/FINAL_REPORT.md` / `paper/`).
-- [ ] High-resolution publication figures generated (PSNR curves, 3D Bloch surfaces, bit-significance charts).
-- [ ] Open-source research artifact release (GitHub/Zenodo) with reproduction runbook and complete dataset checkpoints.
-- [ ] Academic presentation slide deck and live interactive thesis/defense demonstration script completed.
+- [x] Comprehensive IEEE Transactions/Conference format research manuscript completed (`paper/main.tex`, ~4,987 words).
+- [x] High-resolution publication figures generated in native TikZ and PDF (PSNR curves, architectural diagrams, bit-significance charts).
+- [x] Curated IEEE references bibliography with 20 real publications (`paper/references.bib`).
+- [x] Mid-term and final project defense presentation battlepack with 20-minute timings and viva Q&A guide (`PREP.md`).
 
 ------------------------------------------------------------------------
 

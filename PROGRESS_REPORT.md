@@ -25,21 +25,21 @@ This project formulates an end-to-end empirical and theoretical framework that:
 
 | Project Dimension | Status | Key Metric / Verification |
 | :--- | :---: | :--- |
-| **Phase 1: Encoding & Noise Modeling** | **100% Completed** | FRQI & NEQR synthesizers; Kraus noise channels; 14 tests passing. |
-| **Phase 2: Denoising & Classical Suite** | **85% Completed** | QHWT sub-band filter, NEQR Spatial Adder, and BM3D wrapper operational. |
-| **Phase 3A: Streaming Bridge & Event Bus** | **100% Completed** | FastAPI server, WebSocket `/ws/simulate`, Pydantic v2 schemas; 7 tests passing. |
-| **Phase 3B: Next.js 15 Visual Studio** | **Planned (Upcoming)** | Modular 6-stage interactive studio, 3D Bloch sphere (Three.js/R3F). |
-| **Phase 4: Empirical Sweeps & $p_{\text{crit}}$** | **In Progress (30%)** | Sweep architectures drafted; 500+ batch runs across $p \in [10^{-4}, 10^{-1}]$ scheduled. |
-| **Phase 5: Containerization & Reproducibility** | **Planned** | Docker multi-stage builds (`backend`, `frontend`), `docker-compose`. |
-| **Phase 6: Manuscript & Defense Pack** | **In Progress (40%)** | `PREP.md` defense pack ready; IEEE-format paper draft underway. |
-| **Total Test Suite Health** | **100% Passing** | **21 of 21 automated unit & integration tests passing (`pytest -v`).** |
+| **Phase 1: Encoding & Noise Modeling** | **100% Completed** | FRQI & NEQR synthesizers; Kraus noise channels; lossless & shot tests passing. |
+| **Phase 2: Denoising & Classical Suite** | **100% Completed** | QHWT sub-band filter, NEQR Spatial Adder, PennyLane/Qiskit VQDAE, and BM3D wrapper operational. |
+| **Phase 3A: Streaming Bridge & Event Bus** | **100% Completed** | FastAPI server, WebSocket `/ws/simulate`, `/healthz`, Pydantic v2 schemas; integration tests passing. |
+| **Phase 3B: Next.js 16 Visual Studio** | **100% Completed** | Modular 6-stage interactive studio, fixed 100vh layout, deployed at [`qip.ojhaprathmesh.in`](https://qip.ojhaprathmesh.in). |
+| **Phase 4: Empirical Sweeps & $p_{\text{crit}}$** | **100% Completed** | 500+ sweep datapoints, Theorem 2 validated ($R^2 > 0.997$), tracked in `data/experiment_results/`. |
+| **Phase 5: Containerization & Deployment** | **100% Completed** | Multi-stage `Dockerfile`, `docker-compose.yml`, `render.yaml`, and multi-version GitHub Actions CI. |
+| **Phase 6: Manuscript & Defense Pack** | **100% Completed** | ~4,987-word IEEEtran LaTeX paper (`paper/main.tex`), vector TikZ figures, and `PREP.md` viva pack. |
+| **Total Test Suite Health** | **100% Passing** | **48 of 48 automated unit & integration tests passing (`pytest -v`).** |
 
 ```
-Overall Project Progress: [=========================>          ] 70%
+Overall Project Progress: [========================================] 100%
 ├── Completed: Mathematical Proofs, State Synthesis, NISQ Noise Models, Classical Baselines,
-│              QHWT Filter, Spatial Adder, FastAPI Streaming Bridge, Metric Engine.
-└── Remaining: Next.js Visual Studio, PennyLane VQDAE, 500+ Batch Parameter Sweeps,
-               Docker Multi-Stage Packaging, Final IEEE Research Manuscript.
+│              QHWT Filter, Spatial Adder, VQDAE, FastAPI Streaming Bridge, Metric Engine,
+│              Next.js 16 Visual Studio, 500+ Batch Parameter Sweeps, Docker Multi-Stage Packaging,
+│              Cloud Deployment on Render & Vercel, IEEE Research Manuscript, and Defense Pack.
 ```
 
 ---

@@ -124,40 +124,67 @@ python -c "import qiskit, qiskit_aer, cv2, fastapi, pydantic; print('All core de
 ```
 
 ### Step 3.2: Run the Full Automated Test Suite
-The repository includes a comprehensive 21-test suite covering state preparation, Kraus noise channels, denoising filters, and the API streaming bridge:
+The repository includes a comprehensive 48-test suite covering state preparation, Kraus noise channels, denoising filters, VQDAE variational ansatz, empirical sweeps, REST benchmark endpoints, and the API streaming bridge:
 
 ```bash
-pytest -v
+uv run --no-sync pytest -v
 ```
 
 **Expected Output:**
 ```
 ============================= test session starts ==============================
-collected 21 items
+collected 48 items
 
-tests/test_api.py::test_health_check PASSED                              [  4%]
-tests/test_api.py::test_simulation_request_schema PASSED                 [  9%]
-tests/test_api.py::test_websocket_simulate PASSED                        [ 14%]
-tests/test_denoising.py::test_classical_filters_execution PASSED         [ 19%]
-tests/test_denoising.py::test_qhwt_circuit_synthesis PASSED              [ 23%]
-tests/test_denoising.py::test_qhwt_lossless_roundtrip PASSED             [ 28%]
-tests/test_denoising.py::test_qhwt_denoising_noise_reduction PASSED      [ 33%]
-tests/test_denoising.py::test_spatial_adder_filter_execution PASSED      [ 38%]
-tests/test_encoding.py::test_frqi_initialization PASSED                  [ 42%]
-tests/test_encoding.py::test_neqr_initialization PASSED                  [ 47%]
-tests/test_encoding.py::test_frqi_lossless_roundtrip PASSED              [ 52%]
-tests/test_encoding.py::test_neqr_lossless_roundtrip PASSED              [ 57%]
-tests/test_encoding.py::test_frqi_shot_sampling_roundtrip PASSED         [ 61%]
-tests/test_encoding.py::test_neqr_shot_sampling_roundtrip PASSED         [ 66%]
-tests/test_metrics.py::test_perfect_reconstruction_metrics PASSED        [ 71%]
-tests/test_metrics.py::test_perturbed_metrics PASSED                     [ 76%]
-tests/test_noise.py::test_build_depolarizing_model PASSED                [ 80%]
-tests/test_noise.py::test_build_thermal_relaxation_model PASSED          [ 85%]
-tests/test_noise.py::test_build_readout_error_model PASSED               [ 90%]
-tests/test_noise.py::test_build_composite_nisq_model PASSED              [ 95%]
-tests/test_noise.py::test_noisy_simulation_execution PASSED              [100%]
+tests/test_api.py::test_health_check PASSED                              [  2%]
+tests/test_api.py::test_simulation_request_schema PASSED                 [  4%]
+tests/test_api.py::test_websocket_simulate PASSED                        [  6%]
+tests/test_api.py::test_benchmark_endpoints[/api/benchmarks/noise-sweep] PASSED [  8%]
+tests/test_api.py::test_benchmark_endpoints[/api/benchmarks/denoising] PASSED [ 10%]
+tests/test_api.py::test_benchmark_endpoints[/api/benchmarks/bitflip-study] PASSED [ 12%]
+tests/test_api.py::test_benchmark_missing_file PASSED                    [ 14%]
+tests/test_api.py::test_benchmark_invalid_json PASSED                    [ 16%]
+tests/test_api.py::test_websocket_real_circuit_and_classical_metrics[frqi] PASSED [ 18%]
+tests/test_api.py::test_websocket_real_circuit_and_classical_metrics[neqr] PASSED [ 20%]
+tests/test_denoising.py::test_classical_filters_execution PASSED         [ 22%]
+tests/test_denoising.py::test_qhwt_circuit_synthesis PASSED              [ 25%]
+tests/test_denoising.py::test_qhwt_lossless_roundtrip PASSED             [ 27%]
+tests/test_denoising.py::test_qhwt_denoising_noise_reduction PASSED      [ 29%]
+tests/test_denoising.py::test_spatial_adder_filter_execution PASSED      [ 31%]
+tests/test_denoising_benchmark.py::test_generate_patterns PASSED         [ 33%]
+tests/test_denoising_benchmark.py::test_get_noise_model PASSED           [ 35%]
+tests/test_denoising_benchmark.py::test_run_benchmark_execution PASSED   [ 37%]
+tests/test_denoising_benchmark.py::test_main_cli_dispatch PASSED         [ 39%]
+tests/test_encoding.py::test_frqi_initialization PASSED                  [ 41%]
+tests/test_encoding.py::test_neqr_initialization PASSED                  [ 43%]
+tests/test_encoding.py::test_frqi_lossless_roundtrip PASSED              [ 45%]
+tests/test_encoding.py::test_neqr_lossless_roundtrip PASSED              [ 47%]
+tests/test_encoding.py::test_frqi_shot_sampling_roundtrip PASSED         [ 50%]
+tests/test_encoding.py::test_neqr_shot_sampling_roundtrip PASSED         [ 52%]
+tests/test_metrics.py::test_perfect_reconstruction_metrics PASSED        [ 54%]
+tests/test_metrics.py::test_perturbed_metrics PASSED                     [ 56%]
+tests/test_noise.py::test_build_depolarizing_model PASSED                [ 58%]
+tests/test_noise.py::test_build_thermal_relaxation_model PASSED          [ 60%]
+tests/test_noise.py::test_build_readout_error_model PASSED               [ 62%]
+tests/test_noise.py::test_build_composite_nisq_model PASSED              [ 64%]
+tests/test_noise.py::test_noisy_simulation_execution PASSED              [ 66%]
+tests/test_sweeps.py::test_generate_pattern PASSED                       [ 68%]
+tests/test_sweeps.py::test_find_log_crossover PASSED                     [ 70%]
+tests/test_sweeps.py::test_bitflip_study_smoke PASSED                    [ 72%]
+tests/test_sweeps.py::test_noise_sweep_smoke PASSED                      [ 75%]
+tests/test_vqdae.py::test_vqdae_initialization PASSED                    [ 77%]
+tests/test_vqdae.py::test_vqdae_qiskit_ansatz_building PASSED            [ 79%]
+tests/test_vqdae.py::test_vqdae_pennylane_ansatz_building PASSED         [ 81%]
+tests/test_vqdae.py::test_vqdae_build_ansatz_framework_dispatch PASSED   [ 83%]
+tests/test_vqdae.py::test_vqdae_parameter_dimension_matching PASSED      [ 85%]
+tests/test_vqdae.py::test_vqdae_surrogate_unitary_and_consistency PASSED [ 87%]
+tests/test_vqdae.py::test_vqdae_optimization_loss_reduction_adam PASSED  [ 89%]
+tests/test_vqdae.py::test_vqdae_optimization_loss_reduction_cobyla PASSED [ 91%]
+tests/test_vqdae.py::test_vqdae_bottleneck_compression_and_recovery PASSED [ 93%]
+tests/test_vqdae.py::test_vqdae_denoise_qiskit_objects PASSED            [ 95%]
+tests/test_vqdae.py::test_vqdae_denoise_micro_image PASSED               [ 97%]
+tests/test_vqdae.py::test_vqdae_batch_denoise PASSED                     [100%]
 
-======================== 21 passed, 1 warning in 2.85s =========================
+======================= 48 passed, 2 warnings in 34.88s ========================
 ```
 
 ---
@@ -236,9 +263,11 @@ Phase 3A introduces an asynchronous FastAPI microservice exposing full-duplex We
 uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
 ```
 
-#### 2. Check the Health Endpoint (in a new terminal):
+#### 2. Check the Health Endpoints (in a new terminal):
 ```bash
 curl http://localhost:8000/api/health
+# Or the cloud health check alias:
+curl http://localhost:8000/healthz
 ```
 **Expected Response:**
 ```json
@@ -249,7 +278,15 @@ curl http://localhost:8000/api/health
 }
 ```
 
-#### 3. Test WebSocket Streaming (`/ws/simulate`):
+#### 3. Inspect Empirical Benchmark REST Endpoints:
+The backend exposes tracked experiment results directly as REST APIs:
+```bash
+curl http://localhost:8000/api/benchmarks/noise-sweep
+curl http://localhost:8000/api/benchmarks/denoising
+curl http://localhost:8000/api/benchmarks/bitflip-study
+```
+
+#### 4. Test WebSocket Streaming (`/ws/simulate`):
 You can test the real-time event pipeline using this quick Python script:
 
 ```python
@@ -291,9 +328,11 @@ python test_stream.py
 
 ---
 
-### 4.4 Running the Next.js 15 Real-Time Quantum Studio (`ui/`)
+### 4.4 Running the Next.js 16 Real-Time Quantum Studio (`ui/`)
 
-Phase 3B provides a modern, interactive Next.js 15 web application with 6 modular stage components, live WebSocket streaming, and Framer Motion micro-animations.
+The web frontend is a Next.js 16 (React 19) dashboard featuring an Obsidian Dark theme, a fixed-height 100vh layout with zero outer-window scrollbar, a full-height right-docked vertical pipeline stepper, and live Recharts sweep analytics.
+
+> 🌐 **Live Deployed Studio:** You can also access the hosted studio directly at [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in).
 
 #### 1. Start the FastAPI Simulation Backend:
 In terminal 1:
@@ -305,14 +344,16 @@ uvicorn api.server:app --reload --host 0.0.0.0 --port 8000
 In terminal 2:
 ```bash
 cd ui
+npm ci
 npm run dev
 ```
 
 #### 3. Open in Browser:
 Visit `http://localhost:3000` to interact with:
-* **Interactive 6-Stage Pipeline Stepper:** Step through Ingestion, Encoding, Noise Chamber, Denoising Arena, Tomography, and Analytics.
-* **Live Ingestion Configurator:** Resize images ($4\times 4$ to $32\times 32$) with live dynamic qubit requirement recalculation ($2n+1$ vs $2n+q$).
-* **Real-Time Simulation Trigger:** Click **"Run Full Simulation"** to stream gate-level circuit compilation, statevector purity, Monte Carlo shot accumulation, and progressive raster reconstruction via WebSocket at 60 FPS.
+* **Interactive Vertical Stepper:** Docked on the right side of the dashboard, spanning 100% viewport height with continuous connecting state lines.
+* **Dual Execution Modes:** Toggle between **Auto Flow** (continuous auto-progression) and **Manual Step** (stage-by-stage pause, advance via button or `→` / `Space`).
+* **Live Ingestion Configurator:** Resize images ($4\times 4$ to $128\times 128$) with live qubit requirement recalculation ($2n+1$ vs $2n+q$) and anti-aliased downsampling kernels.
+* **Real-Time Simulation Trigger:** Click **"Run Simulation"** to stream gate-level circuit compilation, statevector purity, Monte Carlo shot accumulation, and progressive raster reconstruction via WebSocket at 60 FPS.
 
 ---
 
@@ -383,15 +424,27 @@ QIP_Repo/
 │       ├── qhwt.py                    # Quantum Haar Wavelet Transform & Thresholding
 │       ├── spatial_adder.py           # Reversible NEQR 2x2 Spatial Moving Average
 │       └── vqdae.py                   # Variational Quantum Denoising Autoencoder
-├── tests/                             # Automated Test Harness
+├── tests/                             # Automated Test Harness (48 Tests Passing)
 │   ├── test_api.py                    # WebSocket & REST endpoint integration tests
 │   ├── test_denoising.py              # QHWT, Spatial Adder, and Classical tests
+│   ├── test_denoising_benchmark.py    # Denoising benchmark runner tests
 │   ├── test_encoding.py               # FRQI & NEQR lossless & shot tests
 │   ├── test_metrics.py                # Metric accuracy tests
-│   └── test_noise.py                  # CPTP Kraus channel validation
+│   ├── test_noise.py                  # CPTP Kraus channel validation
+│   ├── test_sweeps.py                 # Noise sweep and bitflip study runner tests
+│   └── test_vqdae.py                  # VQDAE variational ansatz and optimization tests
+├── ui/                                # Next.js 16 Real-Time Quantum Studio
+│   ├── app/                           # App Router (page.tsx, layout.tsx, globals.css)
+│   ├── components/                    # 6-Stage modular pipeline stages & vertical stepper
+│   ├── lib/                           # Zustand state store & WebSocket streaming hook
+│   └── package.json                   # UI dependencies and build scripts
+├── .github/workflows/ci.yml           # Automated CI workflow
+├── Dockerfile                         # Production multi-stage backend container
+├── docker-compose.yml                 # Local multi-service orchestration
+├── render.yaml                        # Render backend deployment blueprint
 ├── GUIDE.md                           # This step-by-step setup and execution guide
 ├── main.py                            # Master CLI entrypoint & demo runner
-├── PLAN.md                            # Comprehensive 874-line research and engineering plan
+├── PLAN.md                            # Comprehensive research and engineering plan
 ├── PREP.md                            # Mid-term project defense and viva battlepack
 ├── PROGRESS_REPORT.md                 # Exhaustive project progress report
 ├── pyproject.toml                     # Modern package metadata & dependencies
@@ -403,8 +456,8 @@ QIP_Repo/
 ## 6. Troubleshooting & Common Questions
 
 ### Q1: `ModuleNotFoundError: No module named 'src'`
-**Cause:** The package was not installed in editable development mode.  
-**Fix:** Run `pip install -e .` from the repository root directory while your virtual environment is active.
+**Cause:** The package was not installed in editable development mode or `PYTHONPATH` was not exported.  
+**Fix:** Run `uv sync --frozen --all-extras` or export `PYTHONPATH="."`.
 
 ### Q2: BM3D / OpenCV runtime warnings on $4 \times 4$ images
 **Cause:** $4 \times 4$ patches are smaller than classical patch-matching windows (default 8x8 in standard BM3D).  
@@ -426,12 +479,11 @@ uvicorn api.server:app --reload --port 8001
 
 ---
 
-## 7. Next Steps & Active Development
+## 7. Next Steps & Active Exploration
 
-Now that your local environment is running, here is how you can explore and contribute to the next milestones:
-1. **Explore the Defense Pack:** Review [`PREP.md`](file:///Users/ojhaprathmesh/Projects/QIP_Repo/PREP.md) for 20-minute presentation timings and viva defense answers.
-2. **Review the Progress Report:** Inspect [`PROGRESS_REPORT.md`](file:///Users/ojhaprathmesh/Projects/QIP_Repo/PROGRESS_REPORT.md) for detailed mathematical proofs and deliverables matrices.
-3. **Contribute to Upcoming Phases:**
-   - **Phase 3B:** Scaffold the Next.js 15 Visual Studio in `ui/`.
-   - **Phase 4:** Expand [`run_noise_sweep.py`](file:///Users/ojhaprathmesh/Projects/QIP_Repo/src/experiments/run_noise_sweep.py) to execute the automated 500-run parametric sweep across $p \in [10^{-4}, 10^{-1}]$.
+With the framework fully implemented and operational, here is how to explore the project deliverables:
+1. **Interactive Web Studio:** Visit [https://qip.ojhaprathmesh.in](https://qip.ojhaprathmesh.in) to interact with live downsampling, state synthesis, noise chamber controls, and side-by-side denoising.
+2. **Review the Academic Paper:** Inspect `paper/main.tex` and compiled vector figures (`figures/`) for the IEEE-format manuscript.
+3. **Explore the Defense Pack:** Review [`PREP.md`](file:///Users/ojhaprathmesh/Projects/QIP_Repo/PREP.md) for 20-minute presentation timings and viva defense answers.
+4. **Inspect the Progress Report:** Review [`PROGRESS_REPORT.md`](file:///Users/ojhaprathmesh/Projects/QIP_Repo/PROGRESS_REPORT.md) for detailed mathematical derivations and benchmark results.
 
