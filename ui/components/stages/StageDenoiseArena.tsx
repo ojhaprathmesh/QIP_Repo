@@ -177,14 +177,14 @@ export const StageDenoiseArena: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#00f5ff]">Stage 04</span>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Denoise Arena & Benchmark Comparison</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Denoise Arena & Benchmark Comparison</h2>
           <p className="text-sm text-slate-400 mt-1">
             Quantum Haar Wavelet Transform (QHWT) thresholding evaluated against classical image restoration baselines.
           </p>
         </div>
 
         {/* Global Reconstruct Indicator */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono">
           <span
             className={`w-2 h-2 rounded-full ${
               frameResult ? 'bg-[#10b981] animate-pulse' : 'bg-slate-500'

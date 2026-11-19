@@ -24,14 +24,14 @@ export const StageEncoding: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#a855f7]">Stage 02</span>
-          <h2 className="text-2xl font-bold text-white tracking-tight">Quantum State Synthesis & Encoding</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">Quantum State Synthesis & Encoding</h2>
           <p className="text-sm text-slate-400 mt-1">
             Mapping pixel intensity values to state space via continuous rotations (FRQI) or basis states (NEQR).
           </p>
         </div>
 
         {/* Status Indicator */}
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono">
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-mono">
           <span
             className={`w-2 h-2 rounded-full ${
               circuitInfo ? 'bg-[#10b981] animate-pulse' : 'bg-slate-500'

@@ -361,7 +361,7 @@ export const StageIngestion: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#00f5ff]">Stage 01</span>
-          <h2 className="text-2xl font-bold text-white tracking-tight">
+          <h2 className="text-xl font-bold text-white tracking-tight">
             Real-World Image Ingestion & Quantum Preprocessing
           </h2>
           <p className="text-sm text-slate-400 mt-1">
@@ -503,13 +503,13 @@ export const StageIngestion: React.FC = () => {
           <div className="space-y-3 pt-3 border-t border-white/10">
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-1.5">Register Resolution (N × N)</label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                 {[4, 8, 16, 32, 64, 128].map((res) => (
                   <button
                     key={res}
                     type="button"
                     onClick={() => setResolution(res)}
-                    className={`py-2 px-2 rounded-lg text-xs font-mono font-semibold text-center whitespace-nowrap transition-all border ${
+                    className={`py-2 px-1 rounded-lg text-[11px] sm:text-xs font-mono font-semibold tracking-tight text-center whitespace-nowrap transition-all border ${
                       resolution === res
                         ? 'bg-[#00f5ff]/20 text-[#00f5ff] border-[#00f5ff] shadow-[0_0_10px_rgba(0,245,255,0.2)]'
                         : 'bg-white/5 text-slate-400 border-white/10 hover:border-white/25 hover:text-white'
@@ -642,13 +642,13 @@ export const StageIngestion: React.FC = () => {
 
           {/* 4. Physical NISQ Noise Rate p & Critical Horizon Selector */}
           <div className="pt-3 border-t border-white/10 space-y-2.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 shrink-0">
                 <Sparkles className="w-3.5 h-3.5 text-[#00f5ff]" />
                 Physical Gate Error Rate (p) vs. p_crit = 0.008
               </span>
               <span
-                className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
+                className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border whitespace-nowrap shrink-0 ${
                   isSubCritical
                     ? 'bg-[#00f5ff]/15 text-[#00f5ff] border-[#00f5ff]/40'
                     : 'bg-[#f43f5e]/15 text-[#f43f5e] border-[#f43f5e]/40'

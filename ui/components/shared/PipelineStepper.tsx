@@ -92,11 +92,11 @@ export const PipelineStepper: React.FC<PipelineStepperProps> = ({
   return (
     <nav aria-label="Pipeline Stages" className="w-full h-full flex flex-col">
       <div className="flex flex-col h-full gap-2 p-3.5 rounded-2xl bg-white/[0.02] backdrop-blur-md border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.4)]">
-        <div className="px-3 py-2 flex items-center justify-between border-b border-white/5 mb-1 shrink-0">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400">
+        <div className="px-3 py-2 flex items-center justify-between gap-2 border-b border-white/5 mb-1 shrink-0">
+          <span className="text-[11px] font-mono uppercase tracking-wider text-slate-400 truncate">
             Pipeline Stages
           </span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00f5ff]/10 text-[#00f5ff] border border-[#00f5ff]/20">
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#00f5ff]/10 text-[#00f5ff] border border-[#00f5ff]/20 whitespace-nowrap shrink-0">
             Stage {activeStage} of 6
           </span>
         </div>

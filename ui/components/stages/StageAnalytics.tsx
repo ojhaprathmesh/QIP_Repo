@@ -148,7 +148,7 @@ export const StageAnalytics: React.FC = () => {
               Stage 06 // Comparative Evaluation & Analytics
             </span>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">
+          <h2 className="text-xl font-bold tracking-tight text-white">
             Performance Benchmarks & Phase Transition
           </h2>
           <p className="text-sm text-slate-400 mt-0.5">
@@ -160,7 +160,7 @@ export const StageAnalytics: React.FC = () => {
         <motion.div
           animate={{ scale: [1, 1.04, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-          className={`px-4 py-2 rounded-full border text-xs md:text-sm font-mono font-bold tracking-wider uppercase text-center ${verdictBadgeStyle}`}
+          className={`px-4 py-2 rounded-xl border text-xs md:text-sm font-mono font-bold tracking-wider uppercase text-center ${verdictBadgeStyle}`}
         >
           {verdict}
         </motion.div>

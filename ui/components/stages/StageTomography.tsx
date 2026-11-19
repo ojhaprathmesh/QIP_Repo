@@ -81,7 +81,7 @@ export const StageTomography: React.FC = () => {
               Stage 05 // Tomography & Measurement
             </span>
           </div>
-          <h2 className="text-2xl font-bold tracking-tight text-white">
+          <h2 className="text-xl font-bold tracking-tight text-white">
             Shot-Based Measurement & State Tomography
           </h2>
           <p className="text-sm text-slate-400 mt-0.5">

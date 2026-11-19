@@ -365,14 +365,14 @@ export const StageNoiseChamber: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-white/10">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wider text-[#f43f5e]">Stage 03</span>
-          <h2 className="text-2xl font-bold text-white tracking-tight">NISQ Noise Chamber & Decoherence</h2>
+          <h2 className="text-xl font-bold text-white tracking-tight">NISQ Noise Chamber & Decoherence</h2>
           <p className="text-sm text-slate-400 mt-1">
             Simulating non-unitary open quantum system evolution via Kraus operators and environmental coupling.
           </p>
         </div>
 
         {/* Dynamic Noise Severity Badge */}
-        <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border text-xs font-mono font-semibold ${badge.className}`}>
+        <div className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg border text-xs font-mono font-semibold ${badge.className}`}>
           <span className={`w-2 h-2 rounded-full ${badge.dot} animate-pulse`} />
           <span>{badge.label}</span>
         </div>

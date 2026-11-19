@@ -63,7 +63,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         </span>
         {delta !== undefined && (
           <span
-            className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full border ${
+            className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-md border ${
               delta >= 0
                 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
                 : 'bg-rose-500/10 text-rose-400 border-rose-500/30'
