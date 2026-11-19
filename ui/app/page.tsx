@@ -287,18 +287,22 @@ export default function QuantumStudioDashboard() {
           </section>
         )}
 
-        {/* Pipeline Stepper */}
-        <section>
-          <PipelineStepper
-            activeStage={activeStage}
-            onStageClick={(stage) => setActiveStage(stage)}
-          />
-        </section>
+        {/* Main Content & Vertical Stepper Layout */}
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          {/* Active Stage Content (Left / Main) */}
+          <section className="flex-1 w-full min-w-0 min-h-[500px]">
+            {renderActiveStage()}
+          </section>
 
-        {/* Active Stage Container */}
-        <section className="flex-1 w-full min-h-[500px]">
-          {renderActiveStage()}
-        </section>
+          {/* Right Sidebar: Vertical Pipeline Stepper */}
+          <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-6 order-first lg:order-last">
+            <PipelineStepper
+              activeStage={activeStage}
+              onStageClick={(stage) => setActiveStage(stage)}
+              orientation="vertical"
+            />
+          </aside>
+        </div>
       </main>
     </div>
   );
