@@ -642,10 +642,10 @@ export const StageIngestion: React.FC = () => {
 
           {/* 4. Physical NISQ Noise Rate p & Critical Horizon Selector */}
           <div className="pt-3 border-t border-white/10 space-y-2.5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 shrink-0">
                 <Sparkles className="w-3.5 h-3.5 text-[#00f5ff]" />
-                Physical Gate Error Rate (p) vs. p_crit = 0.008
+                Gate Error Rate (p)
               </span>
               <span
                 className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold border whitespace-nowrap shrink-0 ${
@@ -654,7 +654,7 @@ export const StageIngestion: React.FC = () => {
                     : 'bg-[#f43f5e]/15 text-[#f43f5e] border-[#f43f5e]/40'
                 }`}
               >
-                {isSubCritical ? 'QUANTUM ADVANTAGE (p < p_crit)' : 'CLASSICAL BM3D PREFERRED (p ≥ p_crit)'}
+                {isSubCritical ? 'QUANTUM ADVANTAGE (p < 0.008)' : 'CLASSICAL BM3D (p ≥ 0.008)'}
               </span>
             </div>
 
