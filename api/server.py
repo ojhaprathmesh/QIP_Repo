@@ -86,6 +86,7 @@ async def pace(seconds: float) -> None:
 
 
 @app.get("/api/health")
+@app.get("/healthz")
 async def health_check():
     """Health check endpoint."""
     return {
