@@ -1,0 +1,301 @@
+{
+  "experiment_id": "EXP-04-05-DENOISING-BENCHMARK",
+  "timestamp": "2026-11-18 17:49:28 UTC",
+  "configuration": {
+    "image": "shepp_logan",
+    "resolution": 4,
+    "noise_rate": 0.005,
+    "noise_channel": "depolarizing",
+    "shots": 1000,
+    "color_bits": 4
+  },
+  "circuits": {
+    "frqi_encoding": {
+      "num_qubits": 5,
+      "depth": 44,
+      "total_gates": 84,
+      "cnot_count": 0,
+      "ops": {
+        "x": 64,
+        "c4ry": 16,
+        "h": 4
+      }
+    },
+    "neqr_encoding": {
+      "num_qubits": 8,
+      "depth": 52,
+      "total_gates": 92,
+      "cnot_count": 0,
+      "ops": {
+        "x": 64,
+        "mcx": 24,
+        "h": 4
+      }
+    },
+    "qhwt_filter": {
+      "num_qubits": 4,
+      "depth": 3,
+      "total_gates": 8,
+      "cnot_count": 0,
+      "ops": {
+        "h": 4,
+        "barrier": 2,
+        "rz": 2
+      }
+    },
+    "spatial_filter": {
+      "num_qubits": 14,
+      "depth": 2,
+      "total_gates": 7,
+      "cnot_count": 4,
+      "ops": {
+        "cx": 4,
+        "barrier": 2,
+        "x": 1
+      }
+    }
+  },
+  "scorecard": [
+    {
+      "method": "FRQI Ideal (Noiseless)",
+      "representation": "FRQI",
+      "category": "quantum",
+      "psnr": 295.6575171273173,
+      "ssim": 1.0000000000000007,
+      "mse": 2.7179927081407914e-30,
+      "circuit_depth": 44,
+      "cnot_count": 0
+    },
+    {
+      "method": "NEQR Ideal (Noiseless)",
+      "representation": "NEQR",
+      "category": "quantum",
+      "psnr": 29.542425094393252,
+      "ssim": 0.9986860949427813,
+      "mse": 0.0011111111111111107,
+      "circuit_depth": 52,
+      "cnot_count": 0
+    },
+    {
+      "method": "FRQI Noisy Input (p=0.005)",
+      "representation": "FRQI",
+      "category": "quantum",
+      "psnr": 11.779428981988588,
+      "ssim": 0.2429887933626438,
+      "mse": 0.06638303462438633,
+      "circuit_depth": 44,
+      "cnot_count": 0
+    },
+    {
+      "method": "NEQR Noisy Input (p=0.005)",
+      "representation": "NEQR",
+      "category": "quantum",
+      "psnr": 7.08729841625175,
+      "ssim": 0.1182095559098114,
+      "mse": 0.19555555555555557,
+      "circuit_depth": 52,
+      "cnot_count": 0
+    },
+    {
+      "method": "Quantum Denoised: QHWT (FRQI)",
+      "representation": "FRQI",
+      "category": "quantum",
+      "psnr": 11.583990681862923,
+      "ssim": 0.18812182581872536,
+      "mse": 0.0694385961100259,
+      "circuit_depth": 47,
+      "cnot_count": 0,
+      "filter_depth": 3,
+      "filter_cnot_count": 0
+    },
+    {
+      "method": "Quantum Denoised: Spatial Adder (NEQR)",
+      "representation": "NEQR",
+      "category": "quantum",
+      "psnr": 10.178544490570701,
+      "ssim": 0.1699129522638786,
+      "mse": 0.09597222222222222,
+      "circuit_depth": 54,
+      "cnot_count": 4,
+      "filter_depth": 2,
+      "filter_cnot_count": 4
+    },
+    {
+      "method": "Quantum Denoised: QHWT (NEQR)",
+      "representation": "NEQR",
+      "category": "quantum",
+      "psnr": 8.235444684107005,
+      "ssim": 0.11580305524294626,
+      "mse": 0.15012586805555556,
+      "circuit_depth": 55,
+      "cnot_count": 0,
+      "filter_depth": 3,
+      "filter_cnot_count": 0
+    },
+    {
+      "method": "Classical Baseline: Bilateral Filter",
+      "representation": "FRQI",
+      "category": "classical",
+      "psnr": 11.377489126725067,
+      "ssim": 0.1123052791053193,
+      "mse": 0.07282006920415225,
+      "circuit_depth": 0,
+      "cnot_count": 0
+    },
+    {
+      "method": "Classical Baseline: BM3D Filter",
+      "representation": "FRQI",
+      "category": "classical",
+      "psnr": 11.63234581723745,
+      "ssim": 0.168429876295752,
+      "mse": 0.06866974240676663,
+      "circuit_depth": 0,
+      "cnot_count": 0
+    },
+    {
+      "method": "Classical Baseline: Median Filter",
+      "representation": "FRQI",
+      "category": "classical",
+      "psnr": 11.128310738258877,
+      "ssim": 0.06369315143686828,
+      "mse": 0.07712033833141099,
+      "circuit_depth": 0,
+      "cnot_count": 0
+    },
+    {
+      "method": "Classical Baseline: Mean Box Filter",
+      "representation": "FRQI",
+      "category": "classical",
+      "psnr": 10.859816750773106,
+      "ssim": 0.010894067499729224,
+      "mse": 0.08203861595423358,
+      "circuit_depth": 0,
+      "cnot_count": 0
+    },
+    {
+      "method": "Classical Baseline: Gaussian Filter",
+      "representation": "FRQI",
+      "category": "classical",
+      "psnr": 11.17749580727099,
+      "ssim": 0.07963356342137001,
+      "mse": 0.0762518560400081,
+      "circuit_depth": 0,
+      "cnot_count": 0
+    }
+  ],
+  "breakeven_analysis": {
+    "sweep_parameter": "noise_rate",
+    "p_breakeven": 0.001,
+    "crossover_found": 1,
+    "description": "Noise rate threshold where classical filtering outperforms quantum filtering: p_breakeven = 0.0010.",
+    "sweep_points": [
+      {
+        "noise_rate": 0.0001,
+        "quantum_psnr": 16.929959360542863,
+        "classical_psnr": 15.289035096805597,
+        "delta_psnr": 1.6409242637372667,
+        "advantage": "quantum"
+      },
+      {
+        "noise_rate": 0.0005,
+        "quantum_psnr": 11.723201592225706,
+        "classical_psnr": 11.398866002115966,
+        "delta_psnr": 0.3243355901097402,
+        "advantage": "quantum"
+      },
+      {
+        "noise_rate": 0.001,
+        "quantum_psnr": 10.880182465551275,
+        "classical_psnr": 10.88118765688682,
+        "delta_psnr": -0.0010051913355439979,
+        "advantage": "classical"
+      },
+      {
+        "noise_rate": 0.002,
+        "quantum_psnr": 10.665492585578882,
+        "classical_psnr": 10.721554267156389,
+        "delta_psnr": -0.056061681577507017,
+        "advantage": "classical"
+      },
+      {
+        "noise_rate": 0.005,
+        "quantum_psnr": 10.784683995346306,
+        "classical_psnr": 10.825908078997351,
+        "delta_psnr": -0.04122408365104491,
+        "advantage": "classical"
+      },
+      {
+        "noise_rate": 0.01,
+        "quantum_psnr": 10.246661248167047,
+        "classical_psnr": 10.607149553330595,
+        "delta_psnr": -0.3604883051635479,
+        "advantage": "classical"
+      },
+      {
+        "noise_rate": 0.02,
+        "quantum_psnr": 10.415350937861641,
+        "classical_psnr": 10.6115683871928,
+        "delta_psnr": -0.1962174493311597,
+        "advantage": "classical"
+      },
+      {
+        "noise_rate": 0.05,
+        "quantum_psnr": 11.392451173480998,
+        "classical_psnr": 11.212697602429728,
+        "delta_psnr": 0.1797535710512701,
+        "advantage": "quantum"
+      },
+      {
+        "noise_rate": 0.1,
+        "quantum_psnr": 10.76991694447573,
+        "classical_psnr": 10.671764370005086,
+        "delta_psnr": 0.09815257447064418,
+        "advantage": "quantum"
+      }
+    ]
+  },
+  "depth_breakdown_boundary": {
+    "sweep_parameter": "circuit_depth",
+    "critical_depth_D_crit": 240,
+    "psnr_boundary_threshold_db": 10.0,
+    "description": "Critical circuit depth beyond which quantum reconstruction PSNR falls below 10 dB: D_crit = 240 gates.",
+    "depth_points": [
+      {
+        "circuit_depth": 10,
+        "effective_fidelity": 0.9228194119572632,
+        "psnr": 29.98056473592852,
+        "ssim": 0.9915005804711868
+      },
+      {
+        "circuit_depth": 30,
+        "effective_fidelity": 0.7858690127248708,
+        "psnr": 19.1230911117368,
+        "ssim": 0.8907080377800689
+      },
+      {
+        "circuit_depth": 60,
+        "effective_fidelity": 0.617590105161163,
+        "psnr": 16.08373445403537,
+        "ssim": 0.8365835092137272
+      },
+      {
+        "circuit_depth": 120,
+        "effective_fidelity": 0.38141753799297634,
+        "psnr": 11.929187211058519,
+        "ssim": 0.43673796926181274
+      },
+      {
+        "circuit_depth": 240,
+        "effective_fidelity": 0.14547933828862356,
+        "psnr": 7.543220203183843,
+        "ssim": -0.41664571151320123
+      },
+      {
+        "circuit_depth": 480,
+        "effective_fidelity": 0.021164237868895774,
+        "psnr": 10.121964462082982,
+        "ssim": 0.1471378290877699
+      }
+    ]
+  }
+}

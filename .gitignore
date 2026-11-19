@@ -73,10 +73,11 @@ yarn-error.log*
 pnpm-debug.log*
 
 # ==============================================================================
-# Experiment Outputs, Caches & Logs (preserve .gitkeep)
+# Experiment Outputs, Caches & Logs (preserve .gitkeep and seed benchmark datasets)
 # ==============================================================================
 data/experiment_results/*
 !data/experiment_results/.gitkeep
+!data/experiment_results/*.json
 data/noisy_classical/*
 !data/noisy_classical/.gitkeep
 reports/figures/*

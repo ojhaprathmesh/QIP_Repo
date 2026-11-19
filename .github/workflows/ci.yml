@@ -43,6 +43,7 @@ jobs:
       - name: Run pytest test suite
         env:
           QIP_PACING_SCALE: "0.0"
+          PYTHONPATH: "."
         run: pytest -v
 
   frontend-build:

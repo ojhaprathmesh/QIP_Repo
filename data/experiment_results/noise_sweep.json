@@ -1,0 +1,144 @@
+{
+  "experiment": "EXP-01_EXP-02_noise_sweep",
+  "metadata": {
+    "timestamp": "2026-11-18T17:49:05.664984+00:00",
+    "resolution": 4,
+    "pattern": "checkerboard",
+    "shots": 1000,
+    "num_points": 2,
+    "p_min": 0.0001,
+    "p_max": 0.1,
+    "color_bits": null,
+    "representations": [
+      "frqi"
+    ],
+    "circuit_complexities": {
+      "frqi": {
+        "num_qubits": 5,
+        "depth": 23,
+        "total_gates": 44,
+        "cnot_count": 0,
+        "ops": {
+          "x": 32,
+          "c4ry": 8,
+          "h": 4
+        }
+      }
+    }
+  },
+  "crossover_analysis": {
+    "frqi": {
+      "p_crit_10db": 0.01869634159618214,
+      "p_crit_classical": 0.0001,
+      "min_psnr": 6.237310399731585,
+      "max_psnr": 21.73771772663438
+    }
+  },
+  "depolarizing_sweep": {
+    "p_values": [
+      0.0001,
+      0.1
+    ],
+    "representations": {
+      "frqi": [
+        {
+          "psnr": 21.73771772663438,
+          "ssim": 0.9855683518514319,
+          "mse": 0.006702367349106225,
+          "brightness_drift": -0.008413959436532947,
+          "state_fidelity": 0.8315993632451517,
+          "p": 0.0001,
+          "classical_baseline_psnr": 100.0
+        },
+        {
+          "psnr": 6.237310399731585,
+          "ssim": 0.058393325136696664,
+          "mse": 0.23783127276698082,
+          "brightness_drift": -0.013715056791220703,
+          "state_fidelity": 0.031249999999998987,
+          "p": 0.1,
+          "classical_baseline_psnr": 19.06589890433453
+        }
+      ]
+    },
+    "classical_baseline": [
+      {
+        "p": 0.0001,
+        "psnr": 100.0,
+        "ssim": 1.0,
+        "mse": 0.0
+      },
+      {
+        "p": 0.1,
+        "psnr": 19.06589890433453,
+        "ssim": 0.9762188439115471,
+        "mse": 0.012399669497358079
+      }
+    ]
+  },
+  "thermal_relaxation_sweep": {
+    "profiles": {
+      "typical_superconducting": {
+        "t1_us": 100.0,
+        "t2_us": 80.0,
+        "gate_time_single_ns": 35.0,
+        "gate_time_two_ns": 250.0,
+        "frqi": {
+          "psnr": 12.06333671403545,
+          "ssim": 0.8026879386631214,
+          "mse": 0.062182235125202,
+          "brightness_drift": 0.019678396210691007,
+          "state_fidelity": 0.43386397728089976
+        }
+      },
+      "degraded_coherence": {
+        "t1_us": 30.0,
+        "t2_us": 15.0,
+        "gate_time_single_ns": 35.0,
+        "gate_time_two_ns": 350.0,
+        "frqi": {
+          "psnr": 5.825607090346394,
+          "ssim": -0.05318364113374229,
+          "mse": 0.2614804904978242,
+          "brightness_drift": 0.012213173872296812,
+          "state_fidelity": 0.03661389373918039
+        }
+      }
+    },
+    "t1_sweep": [
+      {
+        "t1_us": 15.0,
+        "t2_us": 12.0,
+        "frqi": {
+          "psnr": 5.906284047220432,
+          "ssim": 0.04207764254553074,
+          "mse": 0.2566679224346815,
+          "brightness_drift": 0.03245247903101167,
+          "state_fidelity": 0.03603421626921316
+        }
+      },
+      {
+        "t1_us": 82.5,
+        "t2_us": 66.0,
+        "frqi": {
+          "psnr": 9.88832408423988,
+          "ssim": 0.623918642915021,
+          "mse": 0.10260477954138288,
+          "brightness_drift": 0.011597790171871236,
+          "state_fidelity": 0.36643413694024896
+        }
+      },
+      {
+        "t1_us": 150.0,
+        "t2_us": 120.0,
+        "frqi": {
+          "psnr": 14.950774713038799,
+          "ssim": 0.90897839213114,
+          "mse": 0.03198324528017123,
+          "brightness_drift": 5.944042178618325e-05,
+          "state_fidelity": 0.56941404340586
+        }
+      }
+    ]
+  }
+}
