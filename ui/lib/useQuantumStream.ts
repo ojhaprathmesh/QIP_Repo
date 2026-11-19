@@ -17,8 +17,32 @@ interface UseQuantumStreamReturn {
   changeStepMode: (mode: 'auto' | 'manual') => void;
 }
 
-const DEFAULT_WS_URL = 'ws://localhost:8000/ws/simulate';
-const HEALTH_URL = 'http://localhost:8000/api/health';
+function getDefaultWsUrl(): string {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL;
+  }
+  if (typeof window !== 'undefined') {
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    if (window.location.port === '3000') {
+      return `${proto}//${window.location.hostname}:8000/ws/simulate`;
+    }
+    return `${proto}//${window.location.host}/ws/simulate`;
+  }
+  return 'ws://localhost:8000/ws/simulate';
+}
+
+function getDefaultHealthUrl(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api/health`;
+  }
+  if (typeof window !== 'undefined') {
+    if (window.location.port === '3000') {
+      return `http://${window.location.hostname}:8000/api/health`;
+    }
+    return '/api/health';
+  }
+  return 'http://localhost:8000/api/health';
+}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -101,7 +125,7 @@ export function useQuantumStream(
   const isUnmountedRef = useRef<boolean>(false);
   const manualGateResolverRef = useRef<(() => void) | null>(null);
 
-  const targetUrl = options?.url || DEFAULT_WS_URL;
+  const targetUrl = options?.url || getDefaultWsUrl();
 
   const dispatchEvent = useCallback((ev: QuantumEvent) => {
     if (isUnmountedRef.current) return;
@@ -314,7 +338,7 @@ export function useQuantumStream(
 
     const checkHealth = async () => {
       try {
-        const res = await fetch(HEALTH_URL, { cache: 'no-store' });
+        const res = await fetch(getDefaultHealthUrl(), { cache: 'no-store' });
         if (!isUnmountedRef.current && res.ok) {
           setIsConnected(true);
           setError(null);

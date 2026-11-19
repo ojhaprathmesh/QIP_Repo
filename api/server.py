@@ -1,13 +1,16 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.websockets import WebSocketDisconnected
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pathlib import Path
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import asyncio
 import json
 import math
 import os
 import random
+
+import numpy as np
 
 from .schemas import SimulationRequest, STAGE_STARTED, CIRCUIT_COMPILED, STATEVECTOR_UPDATED, \
     SHOTS_ACCUMULATED, FRAME_RECONSTRUCTED, PHASE_CRIT_FOUND
@@ -18,10 +21,15 @@ app = FastAPI()
 # Raised (depending on Starlette version/state) when the browser closed the socket.
 CLIENT_GONE = (WebSocketDisconnect, WebSocketDisconnected)
 
-# CORS middleware
+# CORS middleware supporting local dev and custom subdomain deployments
+cors_origins_env = os.environ.get("CORS_ORIGINS", "")
+allowed_origins = [o.strip() for o in cors_origins_env.split(",") if o.strip()]
+if not allowed_origins:
+    allowed_origins = ["http://localhost:3000", "http://127.0.0.1:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=allowed_origins if "*" not in allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -85,6 +93,46 @@ async def health_check():
         "simulator": "quantum_image_processing",
         "version": "1.0.0"
     }
+
+
+RESULTS_DIR = Path(__file__).resolve().parent.parent / "data" / "experiment_results"
+
+
+def _sanitize(obj: Any) -> Any:
+    """Replace NaN/Infinity (invalid in strict JSON) with None, recursively."""
+    if isinstance(obj, float) and not math.isfinite(obj):
+        return None
+    if isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize(v) for v in obj]
+    return obj
+
+
+def _load_benchmark(filename: str) -> JSONResponse:
+    """Load a stored experiment result file, returning a clean error on failure."""
+    path = RESULTS_DIR / filename
+    if not path.is_file():
+        return JSONResponse(status_code=404, content={"error": f"Benchmark data not found: {filename}"})
+    try:
+        return JSONResponse(content=_sanitize(json.loads(path.read_text())))
+    except (OSError, ValueError) as e:
+        return JSONResponse(status_code=500, content={"error": f"Failed to load {filename}: {e}"})
+
+
+@app.get("/api/benchmarks/noise-sweep")
+async def benchmark_noise_sweep():
+    return _load_benchmark("noise_sweep.json")
+
+
+@app.get("/api/benchmarks/denoising")
+async def benchmark_denoising():
+    return _load_benchmark("denoising_benchmark.json")
+
+
+@app.get("/api/benchmarks/bitflip-study")
+async def benchmark_bitflip_study():
+    return _load_benchmark("bitflip_study.json")
 
 
 @app.websocket("/ws/simulate")
@@ -193,6 +241,47 @@ def _quality(clean: List[List[float]], frame: List[List[float]]):
     return psnr, ssim, mse
 
 
+def _real_circuit_complexity(request: SimulationRequest, clean: List[List[float]]) -> Optional[Dict[str, Any]]:
+    """Synthesize the genuine FRQI/NEQR circuit for small grids; None if unsupported."""
+    n = len(clean)
+    if request.resolution > 8 or request.pattern == "custom" or n < 2 or n & (n - 1):
+        return None
+    try:
+        from src.encoding.frqi import FRQIEncoder
+        from src.encoding.neqr import NEQREncoder
+        from src.metrics.quantum_metrics import extract_circuit_complexity
+        n_coord = int(math.log2(n))
+        img = np.asarray(clean, dtype=np.float64)
+        if request.encoding == "frqi":
+            circuit = FRQIEncoder(n_qubits_coord=n_coord).encode(img)
+        else:
+            color_bits = 4 if request.bit_depth == 4 else 8
+            circuit = NEQREncoder(n_qubits_coord=n_coord, color_bits=color_bits).encode(img)
+        return extract_circuit_complexity(circuit)
+    except Exception:
+        return None
+
+
+def _classical_metrics(clean: List[List[float]], noisy: List[List[float]]) -> Optional[Dict[str, float]]:
+    """Real PSNR/SSIM of median/gaussian/mean filters applied to the noisy image."""
+    try:
+        from src.classical_denoising.standard_filters import (
+            apply_median_filter, apply_gaussian_filter, apply_mean_filter)
+        from src.metrics.image_metrics import compute_psnr, compute_ssim
+        c = np.asarray(clean, dtype=np.float64)
+        x = np.asarray(noisy, dtype=np.float64)
+        out: Dict[str, float] = {}
+        for name, fn in (("median", apply_median_filter),
+                         ("gaussian", apply_gaussian_filter),
+                         ("mean", apply_mean_filter)):
+            f = np.clip(fn(x), 0.0, 1.0)
+            out[f"{name}_psnr"] = round(min(99.0, compute_psnr(c, f)), 2)
+            out[f"{name}_ssim"] = round(compute_ssim(c, f), 4)
+        return out
+    except Exception:
+        return None
+
+
 async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bus: EventBus) -> None:
     """Stream the 6-stage pipeline aligned 1-to-1 with the 6 UI stage tabs."""
     loop = asyncio.get_event_loop()
@@ -244,16 +333,24 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
     # -----------------------------------------------------------------------
     await start(2, "Quantum State Synthesis & Circuit Compilation")
     await pace(COMPILE_SPIN_TIME)
-    target_gates = qubits * 6 + n_addr * 10
-    target_depth = max(8, target_gates // 2)
-    target_cnots = max(4, target_gates // 3)
+    clean = _base_image(request.resolution, request.pattern, getattr(request, "custom_pixels", None))
+    real = _real_circuit_complexity(request, clean)
+    if real:
+        qubits = real["num_qubits"]
+        target_depth = max(1, real["depth"])
+        target_gates = max(1, real["total_gates"])
+        target_cnots = real["cnot_count"]
+    else:
+        target_gates = qubits * 6 + n_addr * 10
+        target_depth = max(8, target_gates // 2)
+        target_cnots = max(4, target_gates // 3)
     for i in range(1, COMPILE_TICKS + 1):
         frac = i / COMPILE_TICKS
         await bus.publish("CIRCUIT_COMPILED", CIRCUIT_COMPILED(
             qubits=qubits,
             depth=max(1, round(target_depth * frac)),
             total_gates=max(1, round(target_gates * frac)),
-            cnot_count=max(1, round(target_cnots * frac)),
+            cnot_count=(round(target_cnots * frac) if real else max(1, round(target_cnots * frac))),
         ).model_dump())
         await pace(COMPILE_TICK_TIME)
     await finish_stage(2)
@@ -278,10 +375,13 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
     # Stage 4 (Tab 4: Denoising Arena): Progressive Wavelet / Spatial Filtering
     # -----------------------------------------------------------------------
     await start(4, "Quantum vs. Classical Denoising Arena")
-    clean = _base_image(request.resolution, request.pattern, getattr(request, "custom_pixels", None))
     noise = [[rng.uniform(-1, 1) for _ in range(n)] for _ in range(n)]
     amp = min(0.65, max(0.10, request.noise_rate * 18))
     final_purity = max(0.18, 1.0 - min(0.82, request.noise_rate * 12.0))
+    classical_metrics = None
+    if request.resolution <= 8 and request.pattern != "custom":
+        noisy = [[min(1.0, max(0.0, clean[y][x] + noise[y][x] * amp)) for x in range(n)] for y in range(n)]
+        classical_metrics = _classical_metrics(clean, noisy)
     for i in range(1, FRAME_TICKS + 1):
         progress = i / FRAME_TICKS
         residual = amp * ((1.0 - progress) ** 1.35) + amp * 0.08
@@ -295,6 +395,7 @@ async def simulate_pipeline(request: SimulationRequest, websocket: WebSocket, bu
             ssim=round(ssim, 4),
             mse=round(mse, 5),
             fidelity=round(fidelity, 4),
+            classical_metrics=classical_metrics,
         ).model_dump())
         await pace(FRAME_TICK_TIME)
     await finish_stage(4)

@@ -15,19 +15,93 @@ import {
 import { useQuantumStore } from '@/lib/quantumStore';
 import MetricCard from '@/components/shared/MetricCard';
 
-// Mock sweep data across noise rates for PSNR comparison
-const mockSweepData = [
+interface SweepChartPoint {
+  pLabel: string;
+  p: number;
+  frqi: number;
+  bm3d: number;
+}
+
+// Fallback mock sweep data across noise rates for PSNR comparison
+const mockSweepData: SweepChartPoint[] = [
   { pLabel: '10⁻⁴', p: 0.0001, frqi: 34.2, bm3d: 31.5 },
   { pLabel: '10⁻³', p: 0.001, frqi: 30.8, bm3d: 28.1 },
   { pLabel: '10⁻²', p: 0.01, frqi: 25.4, bm3d: 24.0 },
   { pLabel: '10⁻¹', p: 0.1, frqi: 18.2, bm3d: 19.8 },
 ];
 
+function formatNoiseLabel(p: number): string {
+  if (Math.abs(p - 0.0001) < 1e-7) return '10⁻⁴';
+  if (Math.abs(p - 0.001) < 1e-6) return '10⁻³';
+  if (Math.abs(p - 0.01) < 1e-5) return '10⁻²';
+  if (Math.abs(p - 0.1) < 1e-4) return '10⁻¹';
+  return p < 0.01 ? p.toExponential(1) : p.toString();
+}
+
 export const StageAnalytics: React.FC = () => {
   const frameResult = useQuantumStore((state) => state.frameResult);
   const statevector = useQuantumStore((state) => state.statevector);
   const phaseCrit = useQuantumStore((state) => state.phaseCrit);
   const config = useQuantumStore((state) => state.config);
+
+  const [sweepData, setSweepData] = React.useState<SweepChartPoint[]>(mockSweepData);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    const fetchSweepBenchmark = async () => {
+      try {
+        const benchmarkUrl = process.env.NEXT_PUBLIC_API_URL
+          ? `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api/benchmarks/noise-sweep`
+          : typeof window !== 'undefined' && window.location.port !== '3000'
+          ? '/api/benchmarks/noise-sweep'
+          : 'http://localhost:8000/api/benchmarks/noise-sweep';
+        const res = await fetch(benchmarkUrl);
+        if (!res.ok) return;
+        const data = await res.json();
+        const depSweep = data?.depolarizing_sweep;
+        const frqiPoints = depSweep?.representations?.frqi;
+        const pValues: number[] = Array.isArray(depSweep?.p_values) ? depSweep.p_values : [];
+        const classicalBaseline = Array.isArray(depSweep?.classical_baseline)
+          ? depSweep.classical_baseline
+          : [];
+
+        if (Array.isArray(frqiPoints) && frqiPoints.length > 0) {
+          const mapped: SweepChartPoint[] = frqiPoints.map(
+            (
+              pt: {
+                p?: number;
+                psnr?: number;
+                classical_baseline_psnr?: number;
+              },
+              idx: number
+            ) => {
+              const pVal = Number(pt.p ?? pValues[idx] ?? 0);
+              const frqiPsnr = Number(pt.psnr ?? 0);
+              const classicalPsnr = Number(
+                pt.classical_baseline_psnr ?? classicalBaseline[idx]?.psnr ?? 0
+              );
+              return {
+                pLabel: formatNoiseLabel(pVal),
+                p: pVal,
+                frqi: Number(frqiPsnr.toFixed(2)),
+                bm3d: Number(classicalPsnr.toFixed(2)),
+              };
+            }
+          );
+          if (!cancelled && mapped.length > 0) {
+            setSweepData(mapped);
+          }
+        }
+      } catch {
+        // Fall back cleanly to mockSweepData if backend is unreachable
+      }
+    };
+
+    fetchSweepBenchmark();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const psnr = frameResult?.psnr !== undefined ? frameResult.psnr.toFixed(2) : '—';
   const ssim = frameResult?.ssim !== undefined ? frameResult.ssim.toFixed(4) : '—';
@@ -180,7 +254,7 @@ export const StageAnalytics: React.FC = () => {
 
             <div className="h-64 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockSweepData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+                <LineChart data={sweepData} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" />
                   <XAxis
                     dataKey="pLabel"
@@ -193,7 +267,7 @@ export const StageAnalytics: React.FC = () => {
                     stroke="#64748b"
                     fontSize={12}
                     tickLine={false}
-                    domain={[15, 38]}
+                    domain={['auto', 'auto']}
                     label={{ value: 'PSNR (dB)', angle: -90, position: 'insideLeft', fill: '#64748b', fontSize: 11 }}
                   />
                   <Tooltip

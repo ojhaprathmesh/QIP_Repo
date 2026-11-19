@@ -68,16 +68,56 @@ export const StageDenoiseArena: React.FC = () => {
     );
   }, [frameResult]);
 
-  const bm3dPsnr = frameResult ? (isSubCritical ? frameResult.psnr - 1.15 : frameResult.psnr + 2.85) : null;
-  const bm3dSsim = frameResult
+  const heuristicBm3dPsnr = frameResult ? (isSubCritical ? frameResult.psnr - 1.15 : frameResult.psnr + 2.85) : null;
+  const heuristicBm3dSsim = frameResult
     ? Math.min(0.992, Math.max(0.45, isSubCritical ? frameResult.ssim - 0.018 : frameResult.ssim + 0.064))
     : null;
-  const medianPsnr = bm3dPsnr !== null ? bm3dPsnr - 1.65 : null;
-  const medianSsim = bm3dSsim !== null ? Math.max(0.35, bm3dSsim - 0.042) : null;
-  const gaussPsnr = bm3dPsnr !== null ? bm3dPsnr - 2.1 : null;
-  const gaussSsim = bm3dSsim !== null ? Math.max(0.32, bm3dSsim - 0.058) : null;
-  const meanPsnr = bm3dPsnr !== null ? bm3dPsnr - 2.85 : null;
-  const meanSsim = bm3dSsim !== null ? Math.max(0.28, bm3dSsim - 0.081) : null;
+  const classicalMetrics = frameResult?.classical_metrics;
+
+  const bm3dPsnr =
+    classicalMetrics?.bm3d_psnr !== undefined
+      ? classicalMetrics.bm3d_psnr
+      : heuristicBm3dPsnr;
+  const bm3dSsim =
+    classicalMetrics?.bm3d_ssim !== undefined
+      ? classicalMetrics.bm3d_ssim
+      : heuristicBm3dSsim;
+  const medianPsnr =
+    classicalMetrics?.median_psnr !== undefined
+      ? classicalMetrics.median_psnr
+      : heuristicBm3dPsnr !== null
+      ? heuristicBm3dPsnr - 1.65
+      : null;
+  const medianSsim =
+    classicalMetrics?.median_ssim !== undefined
+      ? classicalMetrics.median_ssim
+      : heuristicBm3dSsim !== null
+      ? Math.max(0.35, heuristicBm3dSsim - 0.042)
+      : null;
+  const gaussPsnr =
+    classicalMetrics?.gaussian_psnr !== undefined
+      ? classicalMetrics.gaussian_psnr
+      : heuristicBm3dPsnr !== null
+      ? heuristicBm3dPsnr - 2.1
+      : null;
+  const gaussSsim =
+    classicalMetrics?.gaussian_ssim !== undefined
+      ? classicalMetrics.gaussian_ssim
+      : heuristicBm3dSsim !== null
+      ? Math.max(0.32, heuristicBm3dSsim - 0.058)
+      : null;
+  const meanPsnr =
+    classicalMetrics?.mean_psnr !== undefined
+      ? classicalMetrics.mean_psnr
+      : heuristicBm3dPsnr !== null
+      ? heuristicBm3dPsnr - 2.85
+      : null;
+  const meanSsim =
+    classicalMetrics?.mean_ssim !== undefined
+      ? classicalMetrics.mean_ssim
+      : heuristicBm3dSsim !== null
+      ? Math.max(0.28, heuristicBm3dSsim - 0.081)
+      : null;
 
   // Render grid helper for reconstructed pixels
   const renderPixelGrid = (pixels: number[][] | undefined, borderColor: string) => {
@@ -276,7 +316,9 @@ export const StageDenoiseArena: React.FC = () => {
 
           <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs text-slate-400">
             <span>Reference State: Classical Filters</span>
-            <span className="text-[#10b981] font-mono">Deterministic Heuristics</span>
+            <span className="text-[#10b981] font-mono">
+              {classicalMetrics ? 'Live Classical Filter Metrics' : 'Deterministic Heuristics'}
+            </span>
           </div>
         </div>
       </div>

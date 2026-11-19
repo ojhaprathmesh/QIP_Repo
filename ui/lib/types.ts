@@ -49,6 +49,7 @@ export interface FrameReconstructedEvent {
   ssim: number;
   mse: number;
   fidelity?: number;
+  classical_metrics?: Record<string, number>;
 }
 
 export interface PhaseCritFoundEvent {

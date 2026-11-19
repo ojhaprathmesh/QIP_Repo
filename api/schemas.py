@@ -42,6 +42,7 @@ class FRAME_RECONSTRUCTED(BaseModel):
     ssim: float = Field(..., description="Structural similarity index")
     mse: float = Field(..., description="Mean squared error")
     fidelity: float = Field(0.95, description="Uhlmann-Jozsa quantum state fidelity F(rho, sigma)")
+    classical_metrics: Optional[Dict[str, float]] = Field(None, description="Real classical filter PSNR/SSIM (median/gaussian/mean)")
 
 class PHASE_CRIT_FOUND(BaseModel):
     p_crit: float = Field(..., description="Critical phase value")

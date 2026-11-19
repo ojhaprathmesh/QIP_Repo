@@ -1,0 +1,40 @@
+# Version control & local environments
+.git/
+.gitignore
+.env
+.env.*
+.venv/
+venv/
+env/
+
+# Python caches & build artifacts
+**/__pycache__/
+**/*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Next.js local build & dependencies (installed fresh inside Docker)
+ui/node_modules/
+ui/.next/
+ui/out/
+ui/build/
+*.tsbuildinfo
+
+# Research, docs, notebooks & IDE artifacts not needed at runtime
+notebooks/
+paper/
+reports/
+scripts/
+tests/
+graphify-out/
+.claude/
+.vscode/
+.idea/
+.DS_Store
+*.md
+uv.lock
+environment.yml

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { Play, RotateCcw, Activity, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Play, RotateCcw, Activity, ChevronRight, Cpu } from 'lucide-react';
 import PipelineStepper from '@/components/shared/PipelineStepper';
 import { useQuantumStore } from '@/lib/quantumStore';
 import { useQuantumStream } from '@/lib/useQuantumStream';
@@ -45,6 +45,27 @@ export default function QuantumStudioDashboard() {
     awaitingNextStep,
   } = useQuantumStore();
   const { isConnected, error, send, advanceStep, changeStepMode } = useQuantumStream();
+  const [backendReachable, setBackendReachable] = useState<boolean>(true);
+
+  useEffect(() => {
+    let active = true;
+    const probeBackend = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/health', { cache: 'no-store' });
+        if (active) setBackendReachable(res.ok);
+      } catch {
+        if (active) setBackendReachable(false);
+      }
+    };
+    probeBackend();
+    const interval = setInterval(probeBackend, 6000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isQiskitSimulator = isConnected && !error && backendReachable;
 
   // Latest stage name for the live progress bar
   const lastStage = [...events].reverse().find((e) => e.event_type === 'STAGE_STARTED');
@@ -122,6 +143,23 @@ export default function QuantumStudioDashboard() {
               <span className="text-slate-300">
                 {isConnected ? 'Backend Connected' : error ? 'Connection Error' : 'Connecting...'}
               </span>
+            </div>
+
+            {/* Engine Indicator Badge */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono ${
+                isQiskitSimulator
+                  ? 'bg-[#00f5ff]/10 border-[#00f5ff]/30 text-[#00f5ff]'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+              }`}
+              title={
+                isQiskitSimulator
+                  ? 'Connected to FastAPI Qiskit simulation engine'
+                  : 'Running in-browser fallback simulation engine'
+              }
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span>{isQiskitSimulator ? 'Qiskit Simulator' : 'Client Fallback'}</span>
             </div>
 
             {/* Pipeline Status Indicator */}
