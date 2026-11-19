@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { Play, RotateCcw, Activity, ChevronRight, Cpu } from 'lucide-react';
 import PipelineStepper from '@/components/shared/PipelineStepper';
 import { useQuantumStore } from '@/lib/quantumStore';
-import { useQuantumStream } from '@/lib/useQuantumStream';
+import { useQuantumStream, getDefaultHealthUrl } from '@/lib/useQuantumStream';
 import { SimulationRequest } from '@/lib/types';
 
 import StageIngestion from '@/components/stages/StageIngestion';
@@ -51,7 +51,7 @@ export default function QuantumStudioDashboard() {
     let active = true;
     const probeBackend = async () => {
       try {
-        const res = await fetch('http://localhost:8000/api/health', { cache: 'no-store' });
+        const res = await fetch(getDefaultHealthUrl(), { cache: 'no-store' });
         if (active) setBackendReachable(res.ok);
       } catch {
         if (active) setBackendReachable(false);

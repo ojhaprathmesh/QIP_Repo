@@ -31,7 +31,7 @@ function getDefaultWsUrl(): string {
   return 'ws://localhost:8000/ws/simulate';
 }
 
-function getDefaultHealthUrl(): string {
+export function getDefaultHealthUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
     return `${process.env.NEXT_PUBLIC_API_URL.replace(/\/$/, '')}/api/health`;
   }
