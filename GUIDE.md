@@ -89,7 +89,7 @@ If you do not have `uv`, standard Python 3 virtual environment works out of the 
    python -m pip install --upgrade pip
    python -m pip install -e ".[dev]"
    ```
-   *(Alternatively: `pip install -r requirements.txt && pip install -e .`)*
+   *(Alternatively: `uv sync`)*
 
 ---
 
@@ -395,7 +395,7 @@ QIP_Repo/
 ├── PREP.md                            # Mid-term project defense and viva battlepack
 ├── PROGRESS_REPORT.md                 # Exhaustive project progress report
 ├── pyproject.toml                     # Modern package metadata & dependencies
-└── requirements.txt                   # Standard pip dependency requirements
+└── uv.lock                            # Deterministic pinned dependency lockfile
 ```
 
 ---

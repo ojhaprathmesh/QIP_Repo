@@ -157,7 +157,7 @@ flowchart TB
 
 - [x] Research and Engineering Blueprint ([`PLAN.md`](PLAN.md))
 - [x] Repository Architecture and Directory Scaffolding
-- [x] Packaging (`pyproject.toml`, `requirements.txt`, `environment.yml`)
+- [x] Packaging (`pyproject.toml`, `uv.lock`, `environment.yml`)
 - [x] Preset Noise Profiles & Hardware Configuration (`config/`)
 - [x] Baseline Filter Suite and Metric Calculator (`src/metrics/`, `src/classical_denoising/`)
 - [x] Unit Test Infrastructure (`tests/`)
@@ -222,7 +222,7 @@ flowchart TB
 ├── PLAN.md                           # Master Research & Systems Engineering Plan
 ├── pyproject.toml                    # Standard Python package metadata and tool configs
 ├── README.md                         # Project documentation and current status
-└── requirements.txt                  # Python dependencies
+└── uv.lock                            # Deterministic pinned dependency lockfile
 ```
 
 ---
@@ -231,7 +231,7 @@ flowchart TB
 
 ### Prerequisites
 - Python 3.10 or 3.11
-- [`uv`](https://github.com/astral-sh/uv) (recommended), `virtualenv`, or `conda`
+- [`uv`](https://github.com/astral-sh/uv) (recommended) or `conda`
 
 ### Installation
 
@@ -245,19 +245,15 @@ flowchart TB
 
    **Option A: Using `uv` (Recommended - fastest setup)**
    ```bash
-   uv venv
+   uv sync
    source .venv/bin/activate
-   uv pip install -r requirements.txt
-   uv pip install -e .
    ```
 
    **Option B: Using standard `venv` and `pip`**
    ```bash
-   python3 -m venv .venv
+   pip install uv
+   uv sync
    source .venv/bin/activate
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   pip install -e .
    ```
 
    **Option C: Using Conda**

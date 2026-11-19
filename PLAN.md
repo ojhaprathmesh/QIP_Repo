@@ -737,7 +737,7 @@ QuantumImageRobustness/
 │   ├── test_noise.py                 # Unit tests for CPTP channel trace preservation
 │   └── test_denoising.py             # Unit tests for filter operator correctness
 ├── environment.yml                   # Conda environment configuration
-├── requirements.txt                  # PIP dependency list
+├── uv.lock                           # Deterministic pinned dependency lockfile
 ├── main.py                           # CLI entrypoint for local execution & demos
 └── README.md                         # Research documentation & reproduction instructions
 ```
